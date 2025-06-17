@@ -6,5 +6,13 @@
         "activityBar.inactiveForeground": "#009726",
         "activityBarBadge.background": "#007e0f",
         "activityBarBadge.foreground": "#ffffff"
-    }
+    },
+    "editor.formatOnSave": true,
+    "azureFunctions.deploySubpath": ".",
+    "azureFunctions.postDeployTask": "npm install (functions)",
+    "azureFunctions.projectLanguage": "TypeScript",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.projectLanguageModel": 4,
+    "azureFunctions.preDeployTask": "npm prune (functions)"
 }
