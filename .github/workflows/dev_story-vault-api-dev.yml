@@ -71,6 +71,3 @@ jobs:
           app-name: "story-vault-api-dev"
           slot-name: "Production"
           package: "./output"
-
-      - name: List contents of output
-        run: dir ./output /s
