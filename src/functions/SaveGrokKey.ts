@@ -5,7 +5,7 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
-import { saveGrokKeyRequest } from "../databaseRequests.ts/saveGrokKeyRequest";
+import { saveGrokKeyRequest } from "../databaseRequests/saveGrokKeyRequest";
 
 export async function SaveGrokKey(
   request: HttpRequest,
