@@ -14,7 +14,7 @@ export async function SaveGrokKey(
   try {
     const userId = await getAuthenticatedUserId(request);
 
-    const grokKey = await getKey(request);
+    const grokKey = await getKeyFromBody(request);
 
     await saveGrokKeyRequest(userId, grokKey);
 
@@ -25,7 +25,7 @@ export async function SaveGrokKey(
   }
 }
 
-const getKey = async (request: HttpRequest): Promise<string> => {
+const getKeyFromBody = async (request: HttpRequest): Promise<string> => {
   const { grokKey } = (await request.json()) as any;
 
   if (!grokKey) {
