@@ -67,7 +67,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7A8695FFFA51423EB40445BE5893E3A2 }}
 
       - name: Copy host.json to output
-        run: Copy-Item -Path "host.json" -Destination "./output/host.json" -Force
+        run: Copy-Item -Path "${{ github.workspace }}/host.json" -Destination "./output/host.json" -Force
         shell: pwsh
 
       - name: Deploy to Azure Function App
