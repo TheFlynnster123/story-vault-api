@@ -6,7 +6,6 @@ import {
 } from "@azure/functions";
 import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
 import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
-import { Config } from "../config";
 import OpenAI from "openai";
 import { getGrokChatCompletion } from "../utils/grokClient";
 

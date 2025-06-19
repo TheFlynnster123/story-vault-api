@@ -10,6 +10,7 @@ export class UserStorageClient {
       storageConnectionString
     );
     this.containerClient = blobServiceClient.getContainerClient("users");
+    this.containerClient.createIfNotExists();
   }
 
   async uploadBlob(
@@ -20,6 +21,7 @@ export class UserStorageClient {
     const blockBlobClient = this.containerClient.getBlockBlobClient(
       `${userId}/${blobName}`
     );
+
     await blockBlobClient.upload(contents, contents.length);
   }
 
