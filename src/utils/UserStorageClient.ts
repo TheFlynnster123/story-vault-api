@@ -40,4 +40,37 @@ export class UserStorageClient {
       throw error;
     }
   }
+
+  async listBlobsByPrefix(userId: string, prefix: string): Promise<string[]> {
+    const fullPrefix = `${userId}/${prefix}`;
+    const blobNames: string[] = [];
+    for await (const blob of this.containerClient.listBlobsFlat({
+      prefix: fullPrefix,
+    })) {
+      // Remove the userId/ prefix from the blob name to match the expected blobName format for getBlob
+      blobNames.push(blob.name.substring(userId.length + 1));
+    }
+    return blobNames;
+  }
+
+  async listChatIds(userId: string): Promise<string[]> {
+    const chatIds: string[] = [];
+    const prefix = `${userId}/`; // We want to list "directories" directly under the userId
+
+    for await (const item of this.containerClient.listBlobsByHierarchy("/", {
+      prefix,
+    })) {
+      if (item.kind === "prefix") {
+        // item.name will be like "userId/chatId/", we need to extract "chatId"
+        const fullPath = item.name;
+        // Remove the userId/ prefix and the trailing /
+        const chatId = fullPath.substring(prefix.length, fullPath.length - 1);
+        if (chatId) {
+          // Ensure it's not an empty string if something unexpected happens
+          chatIds.push(chatId);
+        }
+      }
+    }
+    return [...new Set(chatIds)]; // Ensure uniqueness, though hierarchy listing should give unique prefixes
+  }
 }

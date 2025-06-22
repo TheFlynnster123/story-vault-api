@@ -1,9 +1,11 @@
 import OpenAI from "openai";
 import { Config } from "../config";
+import { Message } from "../models/ChatPage";
+import { EncryptionManager } from "./encryptionManager";
 
 export async function getGrokChatCompletion(
   grokKey: string,
-  userMessage: string
+  messages: Message[]
 ): Promise<string | null> {
   const client = new OpenAI({
     apiKey: grokKey,
@@ -12,16 +14,7 @@ export async function getGrokChatCompletion(
 
   const completion = await client.chat.completions.create({
     model: "grok-3",
-    messages: [
-      {
-        role: "system",
-        content: "You are Grok, a highly intelligent, helpful AI assistant.",
-      },
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ],
+    messages: messages,
     stream: false,
   });
 

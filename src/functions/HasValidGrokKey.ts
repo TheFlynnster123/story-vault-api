@@ -21,6 +21,8 @@ export async function HasValidGrokKey(
       return { status: 404 };
     }
   } catch (err: any) {
+    if (err.statusCode == 404) return { status: 404 };
+
     context.error("Error in HasValidGrokKey:", err.message);
     return { status: 500, body: JSON.stringify({ error: err.message }) };
   }
