@@ -1,7 +1,7 @@
 export interface Message {
   id: string;
-  sender: "user" | "system";
-  text: string;
+  role: "user" | "system";
+  content: string;
 }
 
 export interface ChatPage {

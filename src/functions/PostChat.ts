@@ -8,24 +8,25 @@ import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
 import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
 import OpenAI from "openai";
 import { getGrokChatCompletion } from "../utils/grokClient";
+import { Message } from "../models/ChatPage";
 
-export async function PostChatMessage(
+export async function PostChat(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  context.log("PostChatMessage (non-streaming) function processed a request.");
+  context.log("PostChat (non-streaming) function processed a request.");
 
   try {
     const userId = await getAuthenticatedUserId(request);
-    const grokKey = await getGrokKeyRequest(userId);
+    const encryptionKey = request.headers.get("EncryptionKey");
+    const grokKey = await getGrokKeyRequest(userId, encryptionKey);
 
-    const body = (await request.json()) as { message?: string };
-    const userMessage = body?.message;
+    const messages = (await request.json()) as Message[];
 
-    if (!userMessage) return NoMessageFoundResponse();
+    if (!messages) return NoMessagesFoundResponse();
 
     context.log("Sending request to Grok API via grokClient...");
-    const replyContent = await getGrokChatCompletion(grokKey, userMessage);
+    const replyContent = await getGrokChatCompletion(grokKey, messages);
 
     if (replyContent) return ReplyContentResponse(context, replyContent);
     else return NoContentFromGrokResponse(context);
@@ -41,7 +42,7 @@ const GrokApiErrorResponse = (
   context: InvocationContext,
   error: any
 ): HttpResponseInit | PromiseLike<HttpResponseInit> => {
-  context.error("Error in PostChatMessage function:", error);
+  context.error("Error in PostChat function:", error);
   return {
     status: error.status || 500,
     jsonBody: {
@@ -64,17 +65,17 @@ const InternalServerErrorResponse = (
   };
 };
 
-app.http("PostChatMessage", {
+app.http("PostChat", {
   methods: ["POST"],
   authLevel: "anonymous",
-  handler: PostChatMessage,
+  handler: PostChat,
 });
-function NoMessageFoundResponse():
+function NoMessagesFoundResponse():
   | HttpResponseInit
   | PromiseLike<HttpResponseInit> {
   return {
     status: 400,
-    jsonBody: { error: "Missing 'message' in request body." },
+    jsonBody: { error: "Missing messages in request body." },
   };
 }
 
