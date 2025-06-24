@@ -86,7 +86,10 @@ function ReplyContentResponse(
   context.log("Successfully received reply from Grok API.");
   return {
     status: 200,
-    jsonBody: { reply: replyContent },
+    body: JSON.stringify({ reply: replyContent }),
+    headers: {
+      "Content-Type": "application/json",
+    },
   };
 }
 
