@@ -13,7 +13,7 @@ export async function getGrokChatCompletion(
   });
 
   const completion = await client.chat.completions.create({
-    model: "grok-3",
+    model: "grok-3-mini",
     messages: messages,
     stream: false,
   });
