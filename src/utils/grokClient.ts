@@ -16,6 +16,7 @@ export async function getGrokChatCompletion(
     model: "grok-3-mini",
     messages: messages,
     stream: false,
+    reasoning_effort: "high",
   });
 
   return completion.choices[0]?.message?.content || null;
