@@ -72,7 +72,8 @@ jobs:
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
       - name: "Swap pre-deploy slot to production"
-        uses: Azure/cli@v1
+        uses: azure/powershell@v1
         with:
           inlineScript: |
-            az functionapp deployment slot swap --resource-group story-vault --name story-vault-api-dev --slot pre-deploy --target-slot production
+            Switch-AzWebAppSlot -ResourceGroupName story-vault -Name story-vault-api-dev -SourceSlotName pre-deploy -DestinationSlotName production
+          azPSVersion: "latest"
