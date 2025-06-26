@@ -68,12 +68,5 @@ jobs:
         id: fa
         with:
           app-name: "story-vault-api-dev"
-          slot-name: "pre-deploy"
+          slot-name: "Production"
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-
-      - name: "Swap pre-deploy slot to production"
-        uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            Switch-AzWebAppSlot -ResourceGroupName story-vault -Name story-vault-api-dev -SourceSlotName pre-deploy -DestinationSlotName production
-          azPSVersion: "latest"
