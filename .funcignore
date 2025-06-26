@@ -1,10 +1,29 @@
-*.js.map
+# Source files
 *.ts
+src/
+
+# Build artifacts
+*.js.map
+tsconfig.json
+
+# Development files
 .git*
 .vscode
+.github
 local.settings.json
+local.settings.*.json
 test
+tests
+__tests__
 getting_started.md
-node_modules/@types/
-node_modules/azure-functions-core-tools/
-node_modules/typescript/
+*.md
+*.log
+*.diagram
+*.codediagram
+
+# Node modules (except production dependencies)
+node_modules
+!node_modules/production-only-deps
+
+# Keep dist folder for compiled output
+!dist
