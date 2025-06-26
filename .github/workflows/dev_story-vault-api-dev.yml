@@ -41,11 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: |
-            dist
-            host.json
-            package.json
-            .funcignore
+          path: .
 
   deploy:
     runs-on: windows-latest
@@ -74,4 +70,3 @@ jobs:
           app-name: "story-vault-api-dev"
           slot-name: "Production"
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          respect-funcignore: true
