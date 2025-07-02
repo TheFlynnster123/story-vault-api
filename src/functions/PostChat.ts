@@ -21,12 +21,27 @@ export async function PostChat(
     const encryptionKey = request.headers.get("EncryptionKey");
     const grokKey = await getGrokKeyRequest(userId, encryptionKey);
 
+    // Extract and validate optional reasoning header
+    const reasoning = request.headers.get("Reasoning") as "high" | "low" | null;
+    if (reasoning && reasoning !== "high" && reasoning !== "low") {
+      return {
+        status: 400,
+        jsonBody: {
+          error: "Invalid Reasoning header. Must be 'high' or 'low'.",
+        },
+      };
+    }
+
     const messages = (await request.json()) as Message[];
 
     if (!messages) return NoMessagesFoundResponse();
 
     context.log("Sending request to Grok API via grokClient...");
-    const replyContent = await getGrokChatCompletion(grokKey, messages);
+    const replyContent = await getGrokChatCompletion(
+      grokKey,
+      messages,
+      reasoning || undefined
+    );
 
     if (replyContent) return ReplyContentResponse(context, replyContent);
     else return NoContentFromGrokResponse(context);
