@@ -53,6 +53,18 @@ export class UserStorageClient {
     return blobNames;
   }
 
+  async deleteBlob(userId: string, blobName: string): Promise<boolean> {
+    const blockBlobClient = this.containerClient.getBlockBlobClient(
+      `${userId}/${blobName}`
+    );
+    try {
+      await blockBlobClient.deleteIfExists();
+      return true;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
   async listChatIds(userId: string): Promise<string[]> {
     const chatIds: string[] = [];
     const prefix = `${userId}/`; // We want to list "directories" directly under the userId
