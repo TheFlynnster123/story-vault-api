@@ -12,6 +12,10 @@ interface GetNoteRequestBody {
   noteName: string;
 }
 
+interface GetNoteResponse {
+  content: string;
+}
+
 export async function GetNote(
   request: HttpRequest,
   context: InvocationContext
@@ -50,9 +54,13 @@ export async function GetNote(
     }
 
     context.log(`Successfully retrieved note from blob: ${userId}/${blobName}`);
+    const response: GetNoteResponse = { content };
     return {
       status: 200,
-      body: content,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(response),
     };
   } catch (error) {
     context.error("Error getting note:", error);
