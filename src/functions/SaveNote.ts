@@ -4,8 +4,9 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { UserStorageClient } from "../utils/UserStorageClient";
-import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
+import { BaseHttpFunction } from "../utils/baseHttpFunction";
+import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
+import { ResponseBuilder } from "../utils/responseBuilder";
 
 interface SaveNoteRequestBody {
   chatId: string;
@@ -13,54 +14,39 @@ interface SaveNoteRequestBody {
   content: string;
 }
 
-export async function SaveNote(
-  request: HttpRequest,
-  context: InvocationContext
-): Promise<HttpResponseInit> {
-  context.log(`Http function processed request for url "${request.url}"`);
-
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return {
-      status: 401,
-      body: "Unauthorized. No user ID found.",
-    };
+class SaveNoteFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: SaveNoteRequestBody): string | null {
+    if (!body.chatId || !body.noteName || body.content === undefined) {
+      return "Invalid request body. Missing chatId, noteName, or content.";
+    }
+    return null;
   }
 
-  try {
+  protected async execute(
+    request: HttpRequest,
+    context: InvocationContext,
+    userId: string
+  ): Promise<HttpResponseInit> {
     const body = (await request.json()) as SaveNoteRequestBody;
     const { chatId, noteName, content } = body;
 
-    if (!chatId || !noteName || content === undefined) {
-      return {
-        status: 400,
-        body: "Invalid request body. Missing chatId, noteName, or content.",
-      };
-    }
-
-    const userStorageClient = new UserStorageClient();
+    const userStorageClient = UserStorageClientSingleton.getInstance();
     const blobName = `${chatId}/${noteName}`;
 
     await userStorageClient.uploadBlob(userId, blobName, content);
 
     context.log(`Successfully saved note to blob: ${userId}/${blobName}`);
-    return {
-      status: 200,
-      body: "Note saved successfully.",
-    };
-  } catch (error) {
-    context.error("Error saving note:", error);
-    if (error instanceof SyntaxError && error.message.includes("JSON")) {
-      return {
-        status: 400,
-        body: "Invalid JSON format in request body.",
-      };
-    }
-    return {
-      status: 500,
-      body: "Failed to save note.",
-    };
+    return ResponseBuilder.successMessage("Note saved successfully.");
   }
+}
+
+const saveNoteFunction = new SaveNoteFunction();
+
+export async function SaveNote(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  return saveNoteFunction.handler(request, context);
 }
 
 app.http("SaveNote", {

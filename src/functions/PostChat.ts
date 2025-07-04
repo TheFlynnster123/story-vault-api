@@ -21,6 +21,15 @@ export async function PostChat(
     const encryptionKey = request.headers.get("EncryptionKey");
     const grokKey = await getGrokKeyRequest(userId, encryptionKey);
 
+    if (!grokKey) {
+      return {
+        status: 401,
+        jsonBody: {
+          error: "No valid Grok API key found.",
+        },
+      };
+    }
+
     // Extract and validate optional reasoning header
     const reasoning = request.headers.get("Reasoning") as "high" | "low" | null;
     if (reasoning && reasoning !== "high" && reasoning !== "low") {
@@ -53,41 +62,13 @@ export async function PostChat(
   }
 }
 
-const GrokApiErrorResponse = (
-  context: InvocationContext,
-  error: any
-): HttpResponseInit | PromiseLike<HttpResponseInit> => {
-  context.error("Error in PostChat function:", error);
-  return {
-    status: error.status || 500,
-    jsonBody: {
-      error: "Grok API error",
-      details: error.message,
-      code: error.code,
-    },
-  };
-};
-
-const InternalServerErrorResponse = (
-  error: any
-): HttpResponseInit | PromiseLike<HttpResponseInit> => {
-  return {
-    status: 500,
-    jsonBody: {
-      error: "An unexpected error occurred.",
-      details: error.message,
-    },
-  };
-};
-
 app.http("PostChat", {
   methods: ["POST"],
   authLevel: "anonymous",
   handler: PostChat,
 });
-function NoMessagesFoundResponse():
-  | HttpResponseInit
-  | PromiseLike<HttpResponseInit> {
+
+function NoMessagesFoundResponse(): HttpResponseInit {
   return {
     status: 400,
     jsonBody: { error: "Missing messages in request body." },
@@ -97,7 +78,7 @@ function NoMessagesFoundResponse():
 function ReplyContentResponse(
   context: InvocationContext,
   replyContent: string
-) {
+): HttpResponseInit {
   context.log("Successfully received reply from Grok API.");
   return {
     status: 200,
@@ -108,10 +89,37 @@ function ReplyContentResponse(
   };
 }
 
-function NoContentFromGrokResponse(context: InvocationContext) {
+function NoContentFromGrokResponse(
+  context: InvocationContext
+): HttpResponseInit {
   context.log("Grok API response did not contain expected content.");
   return {
     status: 500,
     jsonBody: { error: "Failed to get a valid response from Grok API." },
+  };
+}
+
+function GrokApiErrorResponse(
+  context: InvocationContext,
+  error: any
+): HttpResponseInit {
+  context.error("Error in PostChat function:", error);
+  return {
+    status: error.status || 500,
+    jsonBody: {
+      error: "Grok API error",
+      details: error.message,
+      code: error.code,
+    },
+  };
+}
+
+function InternalServerErrorResponse(error: any): HttpResponseInit {
+  return {
+    status: 500,
+    jsonBody: {
+      error: "An unexpected error occurred.",
+      details: error.message,
+    },
   };
 }

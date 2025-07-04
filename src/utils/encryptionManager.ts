@@ -9,7 +9,7 @@ export class EncryptionManager {
 
   async encryptString(keyHex: string, data: string) {
     const keyBuffer = new Uint8Array(
-      keyHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+      keyHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16))
     );
     const key = await crypto.subtle.importKey(
       "raw",
@@ -40,7 +40,7 @@ export class EncryptionManager {
 
   async decryptString(keyHex: string, data: string) {
     const keyBuffer = new Uint8Array(
-      keyHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+      keyHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16))
     );
     const key = await crypto.subtle.importKey(
       "raw",
