@@ -1,15 +1,24 @@
 {
-  "name": "",
+  "name": "story-vault-api",
   "version": "1.0.0",
   "description": "",
   "main": "dist/src/functions/*.js",
   "scripts": {
     "build": "tsc",
+    "build:webpack": "webpack --mode=development",
+    "build:prod": "webpack --mode=production",
     "watch": "tsc -w",
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts tests/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "ci": "npm run lint && npm run format:check && npm run test && npm run build:prod"
   },
   "dependencies": {
     "@azure/functions": "^4.7.3",
@@ -19,9 +28,24 @@
     "openai": "^5.5.1"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "18.x",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.35.1",
+    "@typescript-eslint/parser": "^8.35.1",
     "azure-functions-core-tools": "^4.0.7317",
+    "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "jest": "^30.0.4",
+    "prettier": "^3.6.2",
     "rimraf": "^5.0.0",
-    "typescript": "^4.0.0"
+    "supertest": "^7.1.1",
+    "terser-webpack-plugin": "^5.3.14",
+    "ts-jest": "^29.4.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^4.0.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1"
   }
 }

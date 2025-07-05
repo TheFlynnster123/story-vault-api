@@ -1,10 +1,10 @@
 {
     "workbench.colorTheme": "Default Dark Modern",
     "workbench.colorCustomizations": {
-        "activityBar.background": "#02c719",
-        "activityBar.foreground": "#000000",
-        "activityBar.inactiveForeground": "#009726",
-        "activityBarBadge.background": "#007e0f",
+        "activityBar.background": "#002204",
+        "activityBar.foreground": "#00c72b",
+        "activityBar.inactiveForeground": "#009124",
+        "activityBarBadge.background": "#00550a",
         "activityBarBadge.foreground": "#ffffff"
     },
     "editor.formatOnSave": true,
