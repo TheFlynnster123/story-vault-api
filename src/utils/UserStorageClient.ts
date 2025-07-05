@@ -6,6 +6,11 @@ export class UserStorageClient {
 
   constructor() {
     const storageConnectionString = Config.STORAGE_CONNECTION_STRING;
+    if (!storageConnectionString) {
+      throw new Error(
+        "STORAGE_CONNECTION_STRING environment variable is not set"
+      );
+    }
     const blobServiceClient = BlobServiceClient.fromConnectionString(
       storageConnectionString
     );

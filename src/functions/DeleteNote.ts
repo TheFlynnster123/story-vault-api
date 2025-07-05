@@ -4,62 +4,48 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { UserStorageClient } from "../utils/UserStorageClient";
-import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
+import { BaseHttpFunction } from "../utils/baseHttpFunction";
+import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
+import { ResponseBuilder } from "../utils/responseBuilder";
 
 interface DeleteNoteRequestBody {
   chatId: string;
   noteName: string;
 }
 
-export async function DeleteNote(
-  request: HttpRequest,
-  context: InvocationContext
-): Promise<HttpResponseInit> {
-  context.log(`Http function processed request for url "${request.url}"`);
-
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return {
-      status: 401,
-      body: "Unauthorized. No user ID found.",
-    };
+class DeleteNoteFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: DeleteNoteRequestBody): string | null {
+    if (!body.chatId || !body.noteName) {
+      return "Invalid request body. Missing chatId or noteName.";
+    }
+    return null;
   }
 
-  try {
-    const body = (await request.json()) as DeleteNoteRequestBody;
-    const { chatId, noteName } = body;
+  protected async execute(
+    request: HttpRequest,
+    context: InvocationContext,
+    userId: string,
+    body?: any
+  ): Promise<HttpResponseInit> {
+    const { chatId, noteName } = body as DeleteNoteRequestBody;
 
-    if (!chatId || !noteName) {
-      return {
-        status: 400,
-        body: "Invalid request body. Missing chatId or noteName.",
-      };
-    }
-
-    const userStorageClient = new UserStorageClient();
+    const userStorageClient = UserStorageClientSingleton.getInstance();
     const blobName = `${chatId}/${noteName}`;
 
     await userStorageClient.deleteBlob(userId, blobName);
 
     context.log(`Successfully deleted note from blob: ${userId}/${blobName}`);
-    return {
-      status: 200,
-      body: "Note deleted successfully.",
-    };
-  } catch (error) {
-    context.error("Error deleting note:", error);
-    if (error instanceof SyntaxError && error.message.includes("JSON")) {
-      return {
-        status: 400,
-        body: "Invalid JSON format in request body.",
-      };
-    }
-    return {
-      status: 500,
-      body: "Failed to delete note.",
-    };
+    return ResponseBuilder.successMessage("Note deleted successfully.");
   }
+}
+
+const deleteNoteFunction = new DeleteNoteFunction();
+
+export async function DeleteNote(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  return deleteNoteFunction.handler(request, context);
 }
 
 app.http("DeleteNote", {

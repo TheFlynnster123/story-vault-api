@@ -39,7 +39,7 @@ export const getAuthenticatedUserId = async (
   }
 
   if (userId.startsWith("auth0|")) {
-    return userId.split("|")[1];
+    return userId.substring(6); // Remove "auth0|" prefix
   }
 
   return userId;

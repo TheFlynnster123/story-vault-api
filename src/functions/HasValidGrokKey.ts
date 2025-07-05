@@ -4,28 +4,38 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
+import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
+import { ResponseBuilder } from "../utils/responseBuilder";
+
+class HasValidGrokKeyFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: any): string | null {
+    // No request body validation needed for GET request
+    return null;
+  }
+
+  protected async execute(
+    request: HttpRequest,
+    context: InvocationContext,
+    userId: string
+  ): Promise<HttpResponseInit> {
+    const grokKey = await getGrokKeyRequest(userId);
+
+    if (grokKey) {
+      return ResponseBuilder.success();
+    } else {
+      return ResponseBuilder.notFound("Grok key not found");
+    }
+  }
+}
+
+const hasValidGrokKeyFunction = new HasValidGrokKeyFunction();
 
 export async function HasValidGrokKey(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  try {
-    const userId = await getAuthenticatedUserId(request);
-    const grokKey = await getGrokKeyRequest(userId);
-
-    if (grokKey) {
-      return { status: 200 };
-    } else {
-      return { status: 404 };
-    }
-  } catch (err: any) {
-    if (err.statusCode == 404) return { status: 404 };
-
-    context.error("Error in HasValidGrokKey:", err.message);
-    return { status: 500, body: JSON.stringify({ error: err.message }) };
-  }
+  return hasValidGrokKeyFunction.handler(request, context);
 }
 
 app.http("HasValidGrokKey", {

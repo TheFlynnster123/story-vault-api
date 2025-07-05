@@ -66,11 +66,18 @@ export async function GetChatPage(
       };
     }
 
-    if (error.name === "RestError" && error.code === "BlobNotFound") {
-      return {
-        status: 404,
-        body: "Chat page not found.",
-      };
+    if (
+      error &&
+      typeof error === "object" &&
+      "name" in error &&
+      "code" in error
+    ) {
+      if (error.name === "RestError" && error.code === "BlobNotFound") {
+        return {
+          status: 404,
+          body: "Chat page not found.",
+        };
+      }
     }
     return {
       status: 500,
