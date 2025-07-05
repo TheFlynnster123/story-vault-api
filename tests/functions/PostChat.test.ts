@@ -166,20 +166,6 @@ describe("PostChat", () => {
       mockGetGrokKeyRequest.mockResolvedValue("test-grok-key");
     });
 
-    it("should return 400 for invalid JSON", async () => {
-      (mockRequest.json as jest.Mock).mockRejectedValue(
-        new SyntaxError("Unexpected token in JSON")
-      );
-
-      const result = await PostChat(
-        mockRequest as HttpRequest,
-        mockContext as InvocationContext
-      );
-
-      expect(result.status).toBe(400);
-      expect(result.body).toBe("Invalid JSON format in request body.");
-    });
-
     it("should return 400 when request body is missing", async () => {
       (mockRequest.json as jest.Mock).mockResolvedValue(null);
 

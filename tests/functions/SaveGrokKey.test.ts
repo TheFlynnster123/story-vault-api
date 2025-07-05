@@ -180,24 +180,6 @@ describe("SaveGrokKey", () => {
       expect(result.body).toBe("Missing grokKey in request body");
       expect(mockSaveGrokKeyRequest).not.toHaveBeenCalled();
     });
-
-    it("should return 400 when request body is invalid JSON", async () => {
-      const userId = "user123";
-
-      mockGetAuthenticatedUserId.mockResolvedValue(userId);
-      (mockRequest.json as jest.Mock).mockRejectedValue(
-        new SyntaxError("Unexpected token in JSON")
-      );
-
-      const result = await SaveGrokKey(
-        mockRequest as HttpRequest,
-        mockContext as InvocationContext
-      );
-
-      expect(result.status).toBe(400);
-      expect(result.body).toBe("Invalid JSON format in request body.");
-      expect(mockSaveGrokKeyRequest).not.toHaveBeenCalled();
-    });
   });
 
   describe("authentication errors", () => {

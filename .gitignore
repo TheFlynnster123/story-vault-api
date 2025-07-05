@@ -5,6 +5,8 @@ csx
 edge
 Publish
 
+/coverage
+
 *.user
 *.suo
 *.cscfg

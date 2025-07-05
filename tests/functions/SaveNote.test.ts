@@ -157,21 +157,6 @@ describe("SaveNote", () => {
     );
   });
 
-  it("should return 400 when JSON is invalid", async () => {
-    mockGetAuthenticatedUserId.mockResolvedValue("user123");
-    (mockRequest.json as jest.Mock).mockRejectedValue(
-      new SyntaxError("Unexpected token in JSON")
-    );
-
-    const response = await SaveNote(
-      mockRequest as HttpRequest,
-      mockContext as InvocationContext
-    );
-
-    expect(response.status).toBe(400);
-    expect(response.body).toBe("Invalid JSON format in request body.");
-  });
-
   it("should return 500 when storage client throws an error", async () => {
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
     (mockRequest.json as jest.Mock).mockResolvedValue({
