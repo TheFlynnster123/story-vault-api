@@ -4,36 +4,45 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
+import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { saveGrokKeyRequest } from "../databaseRequests/saveGrokKeyRequest";
+import { ResponseBuilder } from "../utils/responseBuilder";
+
+interface SaveGrokKeyRequestBody {
+  grokKey: string;
+}
+
+class SaveGrokKeyFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: SaveGrokKeyRequestBody): string | null {
+    if (!body.grokKey) {
+      return "Missing grokKey in request body";
+    }
+    return null;
+  }
+
+  protected async execute(
+    request: HttpRequest,
+    context: InvocationContext,
+    userId: string,
+    body?: any
+  ): Promise<HttpResponseInit> {
+    const { grokKey } = body as SaveGrokKeyRequestBody;
+
+    await saveGrokKeyRequest(userId, grokKey);
+
+    context.log(`Successfully saved grok key for user: ${userId}`);
+    return ResponseBuilder.successMessage("Grok key saved successfully", 201);
+  }
+}
+
+const saveGrokKeyFunction = new SaveGrokKeyFunction();
 
 export async function SaveGrokKey(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  try {
-    const userId = await getAuthenticatedUserId(request);
-
-    const grokKey = await getKeyFromBody(request);
-
-    await saveGrokKeyRequest(userId, grokKey);
-
-    return { status: 201 };
-  } catch (err: any) {
-    context.error("Error in SaveGrokKey:", err.message);
-    return { status: 401, body: JSON.stringify({ error: err.message }) };
-  }
+  return saveGrokKeyFunction.handler(request, context);
 }
-
-const getKeyFromBody = async (request: HttpRequest): Promise<string> => {
-  const { grokKey } = (await request.json()) as any;
-
-  if (!grokKey) {
-    throw new Error("Missing grokKey in request body");
-  }
-
-  return grokKey;
-};
 
 app.http("SaveGrokKey", {
   methods: ["POST"],

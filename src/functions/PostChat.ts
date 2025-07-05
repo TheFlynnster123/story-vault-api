@@ -19,12 +19,13 @@ class PostChatFunction extends BaseHttpFunction {
   protected async execute(
     request: HttpRequest,
     context: InvocationContext,
-    userId: string
+    userId: string,
+    body?: any
   ): Promise<HttpResponseInit> {
     context.log("PostChat (non-streaming) function processed a request.");
 
     try {
-      const body = (await request.json()) as PostChatRequest;
+      const requestBody = body as PostChatRequest;
       const encryptionKey = request.headers.get("EncryptionKey");
       const grokKey = await getGrokKeyRequest(userId, encryptionKey);
 
@@ -46,7 +47,7 @@ class PostChatFunction extends BaseHttpFunction {
       context.log("Sending request to Grok API via grokClient...");
       const replyContent = await getGrokChatCompletion(
         grokKey,
-        body.messages,
+        requestBody.messages,
         reasoning || undefined
       );
 

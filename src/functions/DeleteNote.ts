@@ -24,10 +24,10 @@ class DeleteNoteFunction extends BaseHttpFunction {
   protected async execute(
     request: HttpRequest,
     context: InvocationContext,
-    userId: string
+    userId: string,
+    body?: any
   ): Promise<HttpResponseInit> {
-    const body = (await request.json()) as DeleteNoteRequestBody;
-    const { chatId, noteName } = body;
+    const { chatId, noteName } = body as DeleteNoteRequestBody;
 
     const userStorageClient = UserStorageClientSingleton.getInstance();
     const blobName = `${chatId}/${noteName}`;

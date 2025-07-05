@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>11/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -80,39 +80,39 @@
 <a name='L15'></a><a href='#L15'>15</a>
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
-<a name='L18'></a><a href='#L18'>18</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L18'></a><a href='#L18'>18</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { UserStorageClient } from "../utils/UserStorageClient";</span>
-<span class="cstat-no" title="statement not covered" >import { EncryptionManager } from "../utils/encryptionManager";</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { UserStorageClient } from "../utils/UserStorageClient";
+import { EncryptionManager } from "../utils/encryptionManager";
 &nbsp;
-export const <span class="cstat-no" title="statement not covered" >getGrokKeyRequest = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync (</span></span>
+export const getGrokKeyRequest = async (
   userId: string,
   encryptionKey?: string | undefined | null
-): Promise&lt;string | undefined&gt; =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-  const userStorageClient = <span class="cstat-no" title="statement not covered" >new UserStorageClient();</span>
-  let key = <span class="cstat-no" title="statement not covered" >await userStorageClient.getBlob(userId, "GrokApiKey.txt");</span>
+): Promise&lt;string | undefined&gt; =&gt; {
+  const userStorageClient = new UserStorageClient();
+  let key = await userStorageClient.getBlob(userId, "GrokApiKey.txt");
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (encryptionKey &amp;&amp; key) {</span>
-    const encryptionManager = <span class="cstat-no" title="statement not covered" >new EncryptionManager(encryptionKey);</span>
-<span class="cstat-no" title="statement not covered" >    key = await encryptionManager.decryptString(encryptionKey, key);</span>
+  if (encryptionKey &amp;&amp; key) {
+    const encryptionManager = new EncryptionManager(encryptionKey);
+    key = await encryptionManager.decryptString(encryptionKey, key);
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return key;</span>
+  return key;
 };
 &nbsp;</pre></td></tr></table></pre>
 
@@ -121,7 +121,7 @@ export const <span class="cstat-no" title="statement not covered" >getGrokKeyReq
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-04T22:00:30.007Z
+                at 2025-07-04T22:42:12.048Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -10,7 +10,8 @@ export abstract class BaseHttpFunction {
   protected abstract execute(
     request: HttpRequest,
     context: InvocationContext,
-    userId: string
+    userId: string,
+    body?: any
   ): Promise<HttpResponseInit>;
 
   protected abstract validateRequestBody(body: any): string | null;
@@ -28,15 +29,17 @@ export abstract class BaseHttpFunction {
         return ResponseBuilder.unauthorized();
       }
 
-      // Parse and validate request body
+      // Parse request body - try JSON first, then text, then allow undefined
       let body: any;
       try {
         body = await request.json();
-      } catch (error) {
-        if (error instanceof SyntaxError && error.message.includes("JSON")) {
-          return ResponseBuilder.invalidJson();
+      } catch (jsonError) {
+        try {
+          const textBody = await request.text();
+          body = textBody || undefined;
+        } catch (textError) {
+          body = undefined;
         }
-        throw error;
       }
 
       // Validate request body
@@ -46,7 +49,7 @@ export abstract class BaseHttpFunction {
       }
 
       // Execute the specific function logic
-      return await this.execute(request, context, userId);
+      return await this.execute(request, context, userId, body);
     } catch (error) {
       context.error("Error in function:", error);
       if (error instanceof SyntaxError && error.message.includes("JSON")) {

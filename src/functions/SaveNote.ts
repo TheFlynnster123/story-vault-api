@@ -25,10 +25,10 @@ class SaveNoteFunction extends BaseHttpFunction {
   protected async execute(
     request: HttpRequest,
     context: InvocationContext,
-    userId: string
+    userId: string,
+    body?: any
   ): Promise<HttpResponseInit> {
-    const body = (await request.json()) as SaveNoteRequestBody;
-    const { chatId, noteName, content } = body;
+    const { chatId, noteName, content } = body as SaveNoteRequestBody;
 
     const userStorageClient = UserStorageClientSingleton.getInstance();
     const blobName = `${chatId}/${noteName}`;
