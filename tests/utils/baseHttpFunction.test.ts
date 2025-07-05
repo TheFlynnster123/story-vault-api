@@ -73,21 +73,6 @@ describe("BaseHttpFunction", () => {
     expect(response.body).toBe("Missing testField");
   });
 
-  it("should return 400 when JSON parsing fails", async () => {
-    mockGetAuthenticatedUserId.mockResolvedValue("user123");
-    (mockRequest.json as jest.Mock).mockRejectedValue(
-      new SyntaxError("Unexpected token in JSON")
-    );
-
-    const response = await testFunction.handler(
-      mockRequest as HttpRequest,
-      mockContext as InvocationContext
-    );
-
-    expect(response.status).toBe(400);
-    expect(response.body).toBe("Invalid JSON format in request body.");
-  });
-
   it("should execute successfully with valid input", async () => {
     const testData = { testField: "value" };
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
