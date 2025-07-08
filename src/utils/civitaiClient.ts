@@ -120,10 +120,41 @@ export class CivitaiClient {
         auth: civitaiKey,
       });
 
-      const response = await civitai.image.fromText(input, false); // Don't wait for completion
+      const response = await civitai.image.fromText(input, false);
       return response;
     } catch (error) {
       console.error("Error generating image:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Gets the status of a job using the Civitai API
+   * @param userId - The authenticated user ID
+   * @param jobId - The job ID to check status for
+   * @param encryptionKey - The encryption key from request headers
+   * @returns Promise<any | null> - The job status object or null if failed
+   */
+  static async getJobStatus(
+    userId: string,
+    jobId: string,
+    encryptionKey?: string
+  ): Promise<any | null> {
+    const civitaiKey = await getCivitaiKeyRequest(userId, encryptionKey);
+
+    if (!civitaiKey) {
+      return null;
+    }
+
+    try {
+      const civitai = new Civitai({
+        auth: civitaiKey,
+      });
+
+      const job = await civitai.jobs.getById(jobId);
+      return job;
+    } catch (error) {
+      console.error("Error getting job status:", error);
       return null;
     }
   }
