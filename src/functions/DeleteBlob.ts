@@ -8,15 +8,15 @@ import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
-interface DeleteNoteRequestBody {
+interface DeleteBlobRequestBody {
   chatId: string;
-  noteName: string;
+  blobName: string;
 }
 
-class DeleteNoteFunction extends BaseHttpFunction {
-  protected validateRequestBody(body: DeleteNoteRequestBody): string | null {
-    if (!body.chatId || !body.noteName) {
-      return "Invalid request body. Missing chatId or noteName.";
+class DeleteBlobFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: DeleteBlobRequestBody): string | null {
+    if (!body.chatId || !body.blobName) {
+      return "Invalid request body. Missing chatId or blobName.";
     }
     return null;
   }
@@ -27,29 +27,29 @@ class DeleteNoteFunction extends BaseHttpFunction {
     userId: string,
     body?: any
   ): Promise<HttpResponseInit> {
-    const { chatId, noteName } = body as DeleteNoteRequestBody;
+    const { chatId, blobName } = body as DeleteBlobRequestBody;
 
     const userStorageClient = UserStorageClientSingleton.getInstance();
-    const blobName = `${chatId}/${noteName}`;
+    const blobName = `${chatId}/${blobName}`;
 
     await userStorageClient.deleteBlob(userId, blobName);
 
-    context.log(`Successfully deleted note from blob: ${userId}/${blobName}`);
-    return ResponseBuilder.successMessage("Note deleted successfully.");
+    context.log(`Successfully deleted blob from blob: ${userId}/${blobName}`);
+    return ResponseBuilder.successMessage("Blob deleted successfully.");
   }
 }
 
-const deleteNoteFunction = new DeleteNoteFunction();
+const deleteBlobFunction = new DeleteBlobFunction();
 
-export async function DeleteNote(
+export async function DeleteBlob(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  return deleteNoteFunction.handler(request, context);
+  return deleteBlobFunction.handler(request, context);
 }
 
-app.http("DeleteNote", {
+app.http("DeleteBlob", {
   methods: ["POST"],
   authLevel: "anonymous",
-  handler: DeleteNote,
+  handler: DeleteBlob,
 });

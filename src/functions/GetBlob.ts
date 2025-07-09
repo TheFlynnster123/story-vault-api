@@ -8,19 +8,19 @@ import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
-interface GetNoteRequestBody {
+interface GetBlobRequestBody {
   chatId: string;
-  noteName: string;
+  blobName: string;
 }
 
-interface GetNoteResponse {
+interface GetBlobResponse {
   content: string;
 }
 
-class GetNoteFunction extends BaseHttpFunction {
-  protected validateRequestBody(body: GetNoteRequestBody): string | null {
-    if (!body.chatId || !body.noteName) {
-      return "Invalid request body. Missing chatId or noteName.";
+class GetBlobFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: GetBlobRequestBody): string | null {
+    if (!body.chatId || !body.blobName) {
+      return "Invalid request body. Missing chatId or blobName.";
     }
     return null;
   }
@@ -31,34 +31,34 @@ class GetNoteFunction extends BaseHttpFunction {
     userId: string,
     body?: any
   ): Promise<HttpResponseInit> {
-    const { chatId, noteName } = body as GetNoteRequestBody;
+    const { chatId, blobName } = body as GetBlobRequestBody;
 
     const userStorageClient = UserStorageClientSingleton.getInstance();
-    const blobName = `${chatId}/${noteName}`;
+    const blobName = `${chatId}/${blobName}`;
 
     const content = await userStorageClient.getBlob(userId, blobName);
 
     if (content === undefined) {
-      return ResponseBuilder.notFound("Note not found.");
+      return ResponseBuilder.notFound("Blob not found.");
     }
 
-    context.log(`Successfully retrieved note from blob: ${userId}/${blobName}`);
-    const response: GetNoteResponse = { content };
+    context.log(`Successfully retrieved blob from blob: ${userId}/${blobName}`);
+    const response: GetBlobResponse = { content };
     return ResponseBuilder.success(response);
   }
 }
 
-const getNoteFunction = new GetNoteFunction();
+const getBlobFunction = new GetBlobFunction();
 
-export async function GetNote(
+export async function GetBlob(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  return getNoteFunction.handler(request, context);
+  return getBlobFunction.handler(request, context);
 }
 
-app.http("GetNote", {
+app.http("GetBlob", {
   methods: ["POST"],
   authLevel: "anonymous",
-  handler: GetNote,
+  handler: GetBlob,
 });

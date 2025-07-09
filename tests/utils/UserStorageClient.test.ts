@@ -67,7 +67,7 @@ describe("UserStorageClient", () => {
     it("should upload blob successfully", async () => {
       const client = new UserStorageClient();
       const userId = "user123";
-      const blobName = "chat123/note.txt";
+      const blobName = "chat123/blob.txt";
       const contents = "Test content";
 
       mockBlockBlobClient.upload.mockResolvedValue({} as any);
@@ -75,7 +75,7 @@ describe("UserStorageClient", () => {
       await client.uploadBlob(userId, blobName, contents);
 
       expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith(
-        "user123/chat123/note.txt"
+        "user123/chat123/blob.txt"
       );
       expect(mockBlockBlobClient.upload).toHaveBeenCalledWith(
         contents,
@@ -101,7 +101,7 @@ describe("UserStorageClient", () => {
     it("should retrieve blob successfully", async () => {
       const client = new UserStorageClient();
       const userId = "user123";
-      const blobName = "chat123/note.txt";
+      const blobName = "chat123/blob.txt";
       const expectedContent = "Test content";
 
       mockBlockBlobClient.downloadToBuffer.mockResolvedValue(
@@ -111,7 +111,7 @@ describe("UserStorageClient", () => {
       const result = await client.getBlob(userId, blobName);
 
       expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith(
-        "user123/chat123/note.txt"
+        "user123/chat123/blob.txt"
       );
       expect(result).toBe(expectedContent);
     });
@@ -134,7 +134,7 @@ describe("UserStorageClient", () => {
     it("should throw error for other storage errors", async () => {
       const client = new UserStorageClient();
       const userId = "user123";
-      const blobName = "chat123/note.txt";
+      const blobName = "chat123/blob.txt";
 
       const error = new Error("Storage error");
       mockBlockBlobClient.downloadToBuffer.mockRejectedValue(error);
@@ -149,14 +149,14 @@ describe("UserStorageClient", () => {
     it("should delete blob successfully", async () => {
       const client = new UserStorageClient();
       const userId = "user123";
-      const blobName = "chat123/note.txt";
+      const blobName = "chat123/blob.txt";
 
       mockBlockBlobClient.deleteIfExists.mockResolvedValue({} as any);
 
       const result = await client.deleteBlob(userId, blobName);
 
       expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith(
-        "user123/chat123/note.txt"
+        "user123/chat123/blob.txt"
       );
       expect(mockBlockBlobClient.deleteIfExists).toHaveBeenCalled();
       expect(result).toBe(true);
@@ -165,7 +165,7 @@ describe("UserStorageClient", () => {
     it("should handle deletion errors", async () => {
       const client = new UserStorageClient();
       const userId = "user123";
-      const blobName = "chat123/note.txt";
+      const blobName = "chat123/blob.txt";
 
       const error = new Error("Delete error");
       mockBlockBlobClient.deleteIfExists.mockRejectedValue(error);
@@ -183,9 +183,9 @@ describe("UserStorageClient", () => {
       const prefix = "chat123/";
 
       const mockBlobs = [
-        { name: "user123/chat123/note1.txt" },
-        { name: "user123/chat123/note2.txt" },
-        { name: "user123/chat123/subfolder/note3.txt" },
+        { name: "user123/chat123/blob1.txt" },
+        { name: "user123/chat123/blob2.txt" },
+        { name: "user123/chat123/subfolder/blob3.txt" },
       ];
 
       mockContainerClient.listBlobsFlat.mockReturnValue({
@@ -202,9 +202,9 @@ describe("UserStorageClient", () => {
         prefix: "user123/chat123/",
       });
       expect(result).toEqual([
-        "chat123/note1.txt",
-        "chat123/note2.txt",
-        "chat123/subfolder/note3.txt",
+        "chat123/blob1.txt",
+        "chat123/blob2.txt",
+        "chat123/subfolder/blob3.txt",
       ]);
     });
 

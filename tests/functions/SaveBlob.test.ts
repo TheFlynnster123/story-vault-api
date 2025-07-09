@@ -1,5 +1,5 @@
 import { HttpRequest, InvocationContext } from "@azure/functions";
-import { DeleteNote } from "../../src/functions/DeleteNote";
+import { SaveBlob } from "../../src/functions/SaveBlob";
 import { getAuthenticatedUserId } from "../../src/utils/getAuthenticatedUserId";
 import { UserStorageClientSingleton } from "../../src/utils/userStorageClientSingleton";
 
@@ -12,14 +12,14 @@ const mockGetAuthenticatedUserId =
 const mockUserStorageClientSingleton =
   UserStorageClientSingleton as jest.Mocked<typeof UserStorageClientSingleton>;
 
-describe("DeleteNote", () => {
+describe("SaveBlob", () => {
   let mockRequest: Partial<HttpRequest>;
   let mockContext: Partial<InvocationContext>;
   let mockStorageClient: any;
 
   beforeEach(() => {
     mockRequest = {
-      url: "http://localhost:7071/api/DeleteNote",
+      url: "http://localhost:7071/api/SaveBlob",
       json: jest.fn(),
     };
 
@@ -29,7 +29,7 @@ describe("DeleteNote", () => {
     };
 
     mockStorageClient = {
-      deleteBlob: jest.fn(),
+      uploadBlob: jest.fn(),
     };
 
     mockUserStorageClientSingleton.getInstance.mockReturnValue(
@@ -41,7 +41,7 @@ describe("DeleteNote", () => {
   it("should return 401 when user is not authenticated", async () => {
     mockGetAuthenticatedUserId.mockResolvedValue("");
 
-    const response = await DeleteNote(
+    const response = await SaveBlob(
       mockRequest as HttpRequest,
       mockContext as InvocationContext
     );
@@ -53,83 +53,107 @@ describe("DeleteNote", () => {
   it("should return 400 when chatId is missing", async () => {
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
     (mockRequest.json as jest.Mock).mockResolvedValue({
-      noteName: "test-note",
+      blobName: "test-blob",
+      content: "test content",
     });
 
-    const response = await DeleteNote(
+    const response = await SaveBlob(
       mockRequest as HttpRequest,
       mockContext as InvocationContext
     );
 
     expect(response.status).toBe(400);
     expect(response.body).toBe(
-      "Invalid request body. Missing chatId or noteName."
+      "Invalid request body. Missing chatId, blobName, or content."
     );
   });
 
-  it("should return 400 when noteName is missing", async () => {
+  it("should return 400 when blobName is missing", async () => {
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
     (mockRequest.json as jest.Mock).mockResolvedValue({
       chatId: "chat123",
+      content: "test content",
     });
 
-    const response = await DeleteNote(
+    const response = await SaveBlob(
       mockRequest as HttpRequest,
       mockContext as InvocationContext
     );
 
     expect(response.status).toBe(400);
     expect(response.body).toBe(
-      "Invalid request body. Missing chatId or noteName."
+      "Invalid request body. Missing chatId, blobName, or content."
     );
   });
 
-  it("should delete note successfully", async () => {
-    const deleteData = {
+  it("should return 400 when content is missing", async () => {
+    mockGetAuthenticatedUserId.mockResolvedValue("user123");
+    (mockRequest.json as jest.Mock).mockResolvedValue({
       chatId: "chat123",
-      noteName: "test-note",
+      blobName: "test-blob",
+    });
+
+    const response = await SaveBlob(
+      mockRequest as HttpRequest,
+      mockContext as InvocationContext
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body).toBe(
+      "Invalid request body. Missing chatId, blobName, or content."
+    );
+  });
+
+  it("should save blob successfully", async () => {
+    const blobData = {
+      chatId: "chat123",
+      blobName: "test-blob",
+      content: "This is test content",
     };
 
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
-    (mockRequest.json as jest.Mock).mockResolvedValue(deleteData);
-    mockStorageClient.deleteBlob.mockResolvedValue(true);
+    (mockRequest.json as jest.Mock).mockResolvedValue(blobData);
+    mockStorageClient.uploadBlob.mockResolvedValue(undefined);
 
-    const response = await DeleteNote(
+    const response = await SaveBlob(
       mockRequest as HttpRequest,
       mockContext as InvocationContext
     );
 
     expect(response.status).toBe(200);
-    expect(response.body).toBe("Note deleted successfully.");
-    expect(mockStorageClient.deleteBlob).toHaveBeenCalledWith(
+    expect(response.body).toBe("Blob saved successfully.");
+    expect(mockStorageClient.uploadBlob).toHaveBeenCalledWith(
       "user123",
-      "chat123/test-note"
+      "chat123/test-blob",
+      "This is test content"
     );
     expect(mockContext.log).toHaveBeenCalledWith(
-      "Successfully deleted note from blob: user123/chat123/test-note"
+      "Successfully saved blob to blob: user123/chat123/test-blob"
     );
   });
 
-  it("should handle deletion of non-existent note", async () => {
-    const deleteData = {
+  it("should handle empty content", async () => {
+    const blobData = {
       chatId: "chat123",
-      noteName: "non-existent-note",
+      blobName: "test-blob",
+      content: "",
     };
 
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
-    (mockRequest.json as jest.Mock).mockResolvedValue(deleteData);
-    mockStorageClient.deleteBlob.mockResolvedValue(false);
+    (mockRequest.json as jest.Mock).mockResolvedValue(blobData);
+    mockStorageClient.uploadBlob.mockResolvedValue(undefined);
 
-    const response = await DeleteNote(
+    const response = await SaveBlob(
       mockRequest as HttpRequest,
       mockContext as InvocationContext
     );
 
     expect(response.status).toBe(200);
-    expect(response.body).toBe("Note deleted successfully.");
-    expect(mockStorageClient.deleteBlob).toHaveBeenCalledWith(
+    expect(response.body).toBe("Blob saved successfully.");
+    expect(mockStorageClient.uploadBlob).toHaveBeenCalledWith(
       "user123",
-      "chat123/non-existent-note"
+      "chat123/test-blob",
+      ""
     );
   });
 
@@ -137,11 +161,12 @@ describe("DeleteNote", () => {
     mockGetAuthenticatedUserId.mockResolvedValue("user123");
     (mockRequest.json as jest.Mock).mockResolvedValue({
       chatId: "chat123",
-      noteName: "test-note",
+      blobName: "test-blob",
+      content: "test content",
     });
-    mockStorageClient.deleteBlob.mockRejectedValue(new Error("Storage error"));
+    mockStorageClient.uploadBlob.mockRejectedValue(new Error("Storage error"));
 
-    const response = await DeleteNote(
+    const response = await SaveBlob(
       mockRequest as HttpRequest,
       mockContext as InvocationContext
     );
@@ -151,28 +176,6 @@ describe("DeleteNote", () => {
     expect(mockContext.error).toHaveBeenCalledWith(
       "Error in function:",
       expect.any(Error)
-    );
-  });
-
-  it("should handle special characters in note names", async () => {
-    const deleteData = {
-      chatId: "chat123",
-      noteName: "test-note with spaces & symbols!",
-    };
-
-    mockGetAuthenticatedUserId.mockResolvedValue("user123");
-    (mockRequest.json as jest.Mock).mockResolvedValue(deleteData);
-    mockStorageClient.deleteBlob.mockResolvedValue(true);
-
-    const response = await DeleteNote(
-      mockRequest as HttpRequest,
-      mockContext as InvocationContext
-    );
-
-    expect(response.status).toBe(200);
-    expect(mockStorageClient.deleteBlob).toHaveBeenCalledWith(
-      "user123",
-      "chat123/test-note with spaces & symbols!"
     );
   });
 });

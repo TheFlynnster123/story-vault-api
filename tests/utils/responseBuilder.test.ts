@@ -121,7 +121,7 @@ describe("ResponseBuilder", () => {
     });
 
     it("should return not found response with custom message", () => {
-      const message = "Note not found";
+      const message = "Blob not found";
       const response = ResponseBuilder.notFound(message);
 
       expect(response.status).toBe(404);

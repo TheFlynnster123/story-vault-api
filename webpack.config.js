@@ -8,9 +8,9 @@ module.exports = (env, argv) => {
     target: 'node',
     entry: {
       // Azure Functions entry points
-      'functions/GetNote': './src/functions/GetNote.ts',
-      'functions/SaveNote': './src/functions/SaveNote.ts',
-      'functions/DeleteNote': './src/functions/DeleteNote.ts',
+      'functions/GetBlob': './src/functions/GetBlob.ts',
+      'functions/SaveBlob': './src/functions/SaveBlob.ts',
+      'functions/DeleteBlob': './src/functions/DeleteBlob.ts',
       'functions/PostChat': './src/functions/PostChat.ts',
       'functions/GetChatHistory': './src/functions/GetChatHistory.ts',
       'functions/GetChatPage': './src/functions/GetChatPage.ts',

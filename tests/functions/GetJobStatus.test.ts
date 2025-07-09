@@ -70,7 +70,7 @@ describe("GetJobStatus", () => {
     expect(mockCivitaiClient.getJobStatus).toHaveBeenCalledWith(
       "test-user-id",
       "test-job-id-123",
-      "test-encryption-key"
+      undefined
     );
   });
 

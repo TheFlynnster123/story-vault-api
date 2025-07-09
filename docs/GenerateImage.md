@@ -113,7 +113,7 @@ console.log("Job details:", result.jobs);
 2. User must be authenticated with a valid JWT token
 3. The Civitai API key must have sufficient credits for image generation
 
-## Notes
+## Blobs
 
 - The function returns immediately with a token and does not wait for image completion
 - Use the returned token with Civitai's API to check generation status and download the final image
