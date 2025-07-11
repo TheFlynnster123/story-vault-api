@@ -30,11 +30,11 @@ class DeleteBlobFunction extends BaseHttpFunction {
     const { chatId, blobName } = body as DeleteBlobRequestBody;
 
     const userStorageClient = UserStorageClientSingleton.getInstance();
-    const blobName = `${chatId}/${blobName}`;
+    const fullName = `${chatId}/${blobName}`;
 
-    await userStorageClient.deleteBlob(userId, blobName);
+    await userStorageClient.deleteBlob(userId, fullName);
 
-    context.log(`Successfully deleted blob from blob: ${userId}/${blobName}`);
+    context.log(`Successfully deleted blob from blob: ${userId}/${fullName}`);
     return ResponseBuilder.successMessage("Blob deleted successfully.");
   }
 }

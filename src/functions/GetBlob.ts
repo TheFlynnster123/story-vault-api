@@ -34,15 +34,15 @@ class GetBlobFunction extends BaseHttpFunction {
     const { chatId, blobName } = body as GetBlobRequestBody;
 
     const userStorageClient = UserStorageClientSingleton.getInstance();
-    const blobName = `${chatId}/${blobName}`;
+    const fullName = `${chatId}/${blobName}`;
 
-    const content = await userStorageClient.getBlob(userId, blobName);
+    const content = await userStorageClient.getBlob(userId, fullName);
 
     if (content === undefined) {
       return ResponseBuilder.notFound("Blob not found.");
     }
 
-    context.log(`Successfully retrieved blob from blob: ${userId}/${blobName}`);
+    context.log(`Successfully retrieved blob from blob: ${userId}/${fullName}`);
     const response: GetBlobResponse = { content };
     return ResponseBuilder.success(response);
   }
