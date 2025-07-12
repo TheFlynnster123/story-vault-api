@@ -16,7 +16,6 @@ interface PostChatRequest {
   reasoningEffort?: "high" | "low";
   model?: string;
   temperature?: number;
-  frequencyPenalty?: number;
 }
 
 class PostChatFunction extends BaseHttpFunction {
@@ -43,8 +42,7 @@ class PostChatFunction extends BaseHttpFunction {
         requestBody.messages,
         requestBody.reasoningEffort,
         requestBody.model,
-        requestBody.temperature,
-        requestBody.frequencyPenalty
+        requestBody.temperature
       );
 
       if (replyContent) {
@@ -95,14 +93,6 @@ class PostChatFunction extends BaseHttpFunction {
         body.temperature > 2.0)
     ) {
       return "Invalid temperature. Must be a number between 0.0 and 2.0.";
-    }
-    if (
-      body.frequencyPenalty &&
-      (typeof body.frequencyPenalty !== "number" ||
-        body.frequencyPenalty < -2.0 ||
-        body.frequencyPenalty > 2.0)
-    ) {
-      return "Invalid frequencyPenalty. Must be a number between -2.0 and 2.0.";
     }
     return null;
   }

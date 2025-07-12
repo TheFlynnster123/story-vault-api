@@ -39,7 +39,10 @@ export class UserStorageClient {
         await blockBlobClient.downloadToBuffer();
       return downloadBlockBlobResponse.toString();
     } catch (error: any) {
-      if (error.name === "RestError" && error.code === "BlobNotFound") {
+      if (
+        error.name === "RestError" &&
+        error.details?.errorCode === "BlobNotFound"
+      ) {
         return undefined;
       }
       throw error;

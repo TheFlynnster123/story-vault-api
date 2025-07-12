@@ -8,8 +8,7 @@ export async function getGrokChatCompletion(
   messages: Message[],
   reasoningEffort: "high" | "low" = "high",
   model: string = "grok-3-mini",
-  temperature: number = 0.7,
-  frequencyPenalty: number = 0
+  temperature: number = 0.7
 ): Promise<string | null> {
   const client = new OpenAI({
     apiKey: grokKey,
@@ -22,7 +21,6 @@ export async function getGrokChatCompletion(
     stream: false,
     reasoning_effort: reasoningEffort,
     temperature: temperature, // between 0.0 and 2.0
-    frequency_penalty: frequencyPenalty, // between -2.0 and 2.0
   });
 
   return completion.choices[0]?.message?.content || null;
