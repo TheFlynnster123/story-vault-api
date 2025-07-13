@@ -2,18 +2,15 @@
   "name": "story-vault-api",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/functions/*.js",
+  "main": "dist/functions/*.js",
   "scripts": {
-    "build": "tsc",
-    "build:webpack": "webpack --mode=development",
-    "build:prod": "webpack --mode=production",
-    "watch": "tsc -w",
+    "build": "esbuild src/functions/*.ts --bundle --platform=node --target=node18 --outdir=dist/functions --sourcemap --external:@azure/functions --external:@azure/storage-blob --external:jsonwebtoken --external:jwks-rsa --external:openai --external:civitai",
+    "build:prod": "esbuild src/functions/*.ts --bundle --platform=node --target=node18 --outdir=dist/functions --minify --external:@azure/functions --external:@azure/storage-blob --external:jsonwebtoken --external:jwks-rsa --external:openai --external:civitai",
+    "watch": "esbuild src/functions/*.ts --bundle --platform=node --target=node18 --outdir=dist/functions --sourcemap --external:@azure/functions --external:@azure/storage-blob --external:jsonwebtoken --external:jwks-rsa --external:openai --external:civitai --watch",
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
     "lint:fix": "eslint src/**/*.ts tests/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -23,6 +20,7 @@
   "dependencies": {
     "@azure/functions": "^4.7.3",
     "@azure/storage-blob": "^12.27.0",
+    "civitai": "^0.1.15",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "openai": "^5.5.1"
@@ -34,6 +32,7 @@
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
     "azure-functions-core-tools": "^4.0.7317",
+    "esbuild": "^0.25.6",
     "eslint": "^9.30.1",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
@@ -41,11 +40,7 @@
     "prettier": "^3.6.2",
     "rimraf": "^5.0.0",
     "supertest": "^7.1.1",
-    "terser-webpack-plugin": "^5.3.14",
     "ts-jest": "^29.4.0",
-    "ts-loader": "^9.5.2",
-    "typescript": "^4.0.0",
-    "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "typescript": "^4.0.0"
   }
 }

@@ -13,6 +13,9 @@ import { Message } from "../models/ChatPage";
 
 interface PostChatRequest {
   messages: Message[];
+  reasoningEffort?: "high" | "low";
+  model?: string;
+  temperature?: number;
 }
 
 class PostChatFunction extends BaseHttpFunction {
@@ -33,22 +36,13 @@ class PostChatFunction extends BaseHttpFunction {
         return ResponseBuilder.unauthorized("No valid Grok API key found.");
       }
 
-      // Extract and validate optional reasoning header
-      const reasoning = request.headers.get("Reasoning") as
-        | "high"
-        | "low"
-        | null;
-      if (reasoning && reasoning !== "high" && reasoning !== "low") {
-        return ResponseBuilder.badRequest(
-          "Invalid Reasoning header. Must be 'high' or 'low'."
-        );
-      }
-
       context.log("Sending request to Grok API via grokClient...");
       const replyContent = await getGrokChatCompletion(
         grokKey,
         requestBody.messages,
-        reasoning || undefined
+        requestBody.reasoningEffort,
+        requestBody.model,
+        requestBody.temperature
       );
 
       if (replyContent) {
@@ -84,6 +78,21 @@ class PostChatFunction extends BaseHttpFunction {
     }
     if (body.messages.length === 0) {
       return "Messages array cannot be empty.";
+    }
+    if (
+      body.reasoningEffort &&
+      body.reasoningEffort !== "high" &&
+      body.reasoningEffort !== "low"
+    ) {
+      return "Invalid reasoningEffort. Must be 'high' or 'low'.";
+    }
+    if (
+      body.temperature &&
+      (typeof body.temperature !== "number" ||
+        body.temperature < 0.0 ||
+        body.temperature > 2.0)
+    ) {
+      return "Invalid temperature. Must be a number between 0.0 and 2.0.";
     }
     return null;
   }
