@@ -93,4 +93,11 @@ export class UserStorageClient {
     }
     return [...new Set(chatIds)]; // Ensure uniqueness, though hierarchy listing should give unique prefixes
   }
+
+  async deleteFolder(userId: string, folderName: string): Promise<void> {
+    const prefix = `${userId}/${folderName}/`;
+    for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
+      await this.containerClient.deleteBlob(blob.name);
+    }
+  }
 }

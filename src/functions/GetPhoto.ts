@@ -43,7 +43,6 @@ class GetPhotoFunction extends BaseHttpFunction {
     }
 
     try {
-      // Parse the JSON string back to object
       const photoData = JSON.parse(photoContent);
 
       context.log(
