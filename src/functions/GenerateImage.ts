@@ -31,7 +31,7 @@ class GenerateImageFunction extends BaseHttpFunction {
     body?: any
   ): Promise<HttpResponseInit> {
     const input = body as GenerateImageRequestBody;
-    const encryptionKey = request.headers.get("x-encryption-key") || undefined;
+    const encryptionKey = request.headers.get("Encryptionkey") || undefined;
 
     const response = await CivitaiClient.generateImage(
       userId,
