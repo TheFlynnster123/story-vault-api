@@ -26,10 +26,11 @@ export async function GetChats(
   try {
     const userStorageClient = new UserStorageClient();
     const chatIds = await userStorageClient.listChatIds(userId);
+    const filteredChatIds = chatIds.filter(id => id !== "global"); // Global Folder
 
     return {
       status: 200,
-      jsonBody: chatIds,
+      jsonBody: filteredChatIds,
     };
   } catch (error) {
     context.error("Error getting chats:", error);
