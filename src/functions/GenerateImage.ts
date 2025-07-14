@@ -5,10 +5,10 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { CivitaiClient, ImageGenerationInput } from "../utils/civitaiClient";
+import { CivitaiClient, ImageGenerationSettings } from "../utils/civitaiClient";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
-interface GenerateImageRequestBody extends ImageGenerationInput {}
+interface GenerateImageRequestBody extends ImageGenerationSettings {}
 
 class GenerateImageFunction extends BaseHttpFunction {
   protected validateRequestBody(body: GenerateImageRequestBody): string | null {
