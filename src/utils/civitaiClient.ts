@@ -43,7 +43,7 @@ export interface AdditionalNetwork {
   strength: number;
 }
 
-export interface ImageGenerationInput {
+export interface ImageGenerationSettings {
   model: string;
   params: ImageGenerationParams;
   additionalNetworks: Record<string, AdditionalNetwork>;
@@ -105,7 +105,7 @@ export class CivitaiClient {
    */
   static async generateImage(
     userId: string,
-    input: ImageGenerationInput,
+    input: ImageGenerationSettings,
     encryptionKey?: string
   ): Promise<any | null> {
     // Retrieve the decrypted Civitai key

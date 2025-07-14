@@ -19,8 +19,8 @@ export async function getGrokChatCompletion(
     model: model,
     messages: messages,
     stream: false,
-    reasoning_effort: reasoningEffort,
     temperature: temperature, // between 0.0 and 2.0
+    ...(model?.includes("mini") ? { reasoning_effort: reasoningEffort } : {}),
   });
 
   return completion.choices[0]?.message?.content || null;

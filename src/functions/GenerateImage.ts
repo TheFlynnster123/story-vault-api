@@ -5,10 +5,10 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { CivitaiClient, ImageGenerationInput } from "../utils/civitaiClient";
+import { CivitaiClient, ImageGenerationSettings } from "../utils/civitaiClient";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
-interface GenerateImageRequestBody extends ImageGenerationInput {}
+interface GenerateImageRequestBody extends ImageGenerationSettings {}
 
 class GenerateImageFunction extends BaseHttpFunction {
   protected validateRequestBody(body: GenerateImageRequestBody): string | null {
@@ -31,7 +31,7 @@ class GenerateImageFunction extends BaseHttpFunction {
     body?: any
   ): Promise<HttpResponseInit> {
     const input = body as GenerateImageRequestBody;
-    const encryptionKey = request.headers.get("x-encryption-key") || undefined;
+    const encryptionKey = request.headers.get("Encryptionkey") || undefined;
 
     const response = await CivitaiClient.generateImage(
       userId,
