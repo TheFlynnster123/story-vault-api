@@ -40,15 +40,14 @@ class PostChatFunction extends BaseHttpFunction {
       const replyContent = await getGrokChatCompletion(
         grokKey,
         requestBody.messages,
-        requestBody.reasoningEffort,
-        requestBody.model,
-        requestBody.temperature
+        requestBody.model
       );
 
       if (replyContent) {
         context.log("Successfully received reply from Grok API.");
         return ResponseBuilder.success({ reply: replyContent });
       } else {
+        context.log(replyContent);
         context.log("Grok API response did not contain expected content.");
         return ResponseBuilder.error(
           "Failed to get a valid response from Grok API.",
@@ -80,13 +79,6 @@ class PostChatFunction extends BaseHttpFunction {
       return "Messages array cannot be empty.";
     }
     if (
-      body.reasoningEffort &&
-      body.reasoningEffort !== "high" &&
-      body.reasoningEffort !== "low"
-    ) {
-      return "Invalid reasoningEffort. Must be 'high' or 'low'.";
-    }
-    if (
       body.temperature &&
       (typeof body.temperature !== "number" ||
         body.temperature < 0.0 ||
@@ -94,6 +86,7 @@ class PostChatFunction extends BaseHttpFunction {
     ) {
       return "Invalid temperature. Must be a number between 0.0 and 2.0.";
     }
+
     return null;
   }
 }
