@@ -6,9 +6,7 @@ import { EncryptionManager } from "./encryptionManager";
 export async function getGrokChatCompletion(
   grokKey: string,
   messages: Message[],
-  reasoningEffort: "high" | "low" = "high",
-  model: string = "grok-3-mini",
-  temperature: number = 0.7
+  model: string = "grok-3-mini"
 ): Promise<string | null> {
   const client = new OpenAI({
     apiKey: grokKey,
@@ -19,8 +17,6 @@ export async function getGrokChatCompletion(
     model: model,
     messages: messages,
     stream: false,
-    temperature: temperature, // between 0.0 and 2.0
-    ...(model?.includes("mini") ? { reasoning_effort: reasoningEffort } : {}),
   });
 
   return completion.choices[0]?.message?.content || null;
