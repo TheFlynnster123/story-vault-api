@@ -15,7 +15,6 @@ interface PostChatRequest {
   messages: Message[];
   reasoningEffort?: "high" | "low";
   model?: string;
-  temperature?: number;
 }
 
 class PostChatFunction extends BaseHttpFunction {
@@ -77,14 +76,6 @@ class PostChatFunction extends BaseHttpFunction {
     }
     if (body.messages.length === 0) {
       return "Messages array cannot be empty.";
-    }
-    if (
-      body.temperature &&
-      (typeof body.temperature !== "number" ||
-        body.temperature < 0.0 ||
-        body.temperature > 2.0)
-    ) {
-      return "Invalid temperature. Must be a number between 0.0 and 2.0.";
     }
 
     return null;
