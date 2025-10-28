@@ -2,7 +2,8 @@
 // This demonstrates how to retrieve and use the encrypted Civitai key
 
 import { getCivitaiKeyRequest } from "../databaseRequests/getCivitaiKeyRequest";
-import { Civitai, Scheduler } from "civitai";
+import { Civitai } from "civitai";
+import { CivitClientErrorParser } from "./civitClientErrorParser";
 
 /**
  * @typedef {Object} ImageGenerationParams
@@ -108,7 +109,6 @@ export class CivitaiClient {
     input: ImageGenerationSettings,
     encryptionKey?: string
   ): Promise<any | null> {
-    // Retrieve the decrypted Civitai key
     const civitaiKey = await getCivitaiKeyRequest(userId, encryptionKey);
 
     if (!civitaiKey) {
@@ -122,9 +122,9 @@ export class CivitaiClient {
 
       const response = await civitai.image.fromText(input, false);
       return response;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating image:", error);
-      return null;
+      return CivitClientErrorParser.parse(error);
     }
   }
 
@@ -155,6 +155,17 @@ export class CivitaiClient {
       return job;
     } catch (error) {
       console.error("Error getting job status:", error);
+
+      // Check if this is a validation error that can be parsed
+      if (error instanceof Error && error.message) {
+        const parsedError = CivitClientErrorParser.parse(error);
+        if (parsedError) {
+          console.error("Parsed validation error:", parsedError);
+          // You can return the parsed error or handle it as needed
+          throw new Error(JSON.stringify(parsedError));
+        }
+      }
+
       return null;
     }
   }
