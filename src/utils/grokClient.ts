@@ -4,6 +4,12 @@ import { Message } from "../models/ChatPage";
 import { EncryptionManager } from "./encryptionManager";
 import { MoodResponse } from "../models/CharacterMood";
 
+const MOOD_QUERY_PROMPT = `Based on the conversation above, describe each character's:
+1. Mood
+2. Realistic Reaction
+
+Respond in JSON format: {"characters": [{"characterName": "name", "mood": "description", "realisticReaction": "description"}]}`;
+
 export async function getGrokChatCompletion(
   grokKey: string,
   messages: Message[],
@@ -37,8 +43,7 @@ export async function getCharacterMoods(
   const moodQueryMessage: Message = {
     id: "mood-query",
     role: "system",
-    content:
-      'Based on the conversation above, describe each character\'s:\n1. Mood\n2. Realistic Reaction\n\nRespond in JSON format: {"characters": [{"characterName": "name", "mood": "description", "realisticReaction": "description"}]}',
+    content: MOOD_QUERY_PROMPT,
   };
 
   const completion = await client.chat.completions.create({
@@ -54,8 +59,31 @@ export async function getCharacterMoods(
 
   try {
     // Parse the JSON response
-    const moodResponse: MoodResponse = JSON.parse(content);
-    return moodResponse;
+    const parsedResponse = JSON.parse(content);
+
+    // Validate the structure matches MoodResponse
+    if (
+      parsedResponse &&
+      typeof parsedResponse === "object" &&
+      Array.isArray(parsedResponse.characters)
+    ) {
+      // Validate each character entry
+      const validCharacters = parsedResponse.characters.every(
+        (char: any) =>
+          char &&
+          typeof char === "object" &&
+          typeof char.characterName === "string" &&
+          typeof char.mood === "string" &&
+          typeof char.realisticReaction === "string"
+      );
+
+      if (validCharacters) {
+        return parsedResponse as MoodResponse;
+      }
+    }
+
+    // If validation fails, return null
+    return null;
   } catch (error) {
     // If JSON parsing fails, return null
     return null;
