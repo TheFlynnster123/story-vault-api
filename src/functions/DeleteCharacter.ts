@@ -14,9 +14,7 @@ interface DeleteCharacterRequestBody {
 }
 
 class DeleteCharacterFunction extends BaseHttpFunction {
-  protected validateRequestBody(
-    body: DeleteCharacterRequestBody
-  ): string | null {
+  protected validateRequestBody(body: any): string | null {
     if (!body.chatId || !body.characterId) {
       return "Invalid request body. Missing chatId or characterId.";
     }

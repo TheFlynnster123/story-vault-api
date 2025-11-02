@@ -15,7 +15,7 @@ interface GetCharacterRequestBody {
 }
 
 class GetCharacterFunction extends BaseHttpFunction {
-  protected validateRequestBody(body: GetCharacterRequestBody): string | null {
+  protected validateRequestBody(body: any): string | null {
     if (!body.chatId || !body.characterId) {
       return "Invalid request body. Missing chatId or characterId.";
     }

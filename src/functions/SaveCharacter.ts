@@ -10,7 +10,7 @@ import { ResponseBuilder } from "../utils/responseBuilder";
 import type { Character } from "../models/Character";
 
 class SaveCharacterFunction extends BaseHttpFunction {
-  protected validateRequestBody(body: Character): string | null {
+  protected validateRequestBody(body: any): string | null {
     if (!body.id || !body.chatId || !body.name) {
       return "Invalid request body. Missing id, chatId, or name.";
     }
