@@ -8,8 +8,9 @@ import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { ResponseBuilder } from "../utils/responseBuilder";
 import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
 import OpenAI from "openai";
-import { getGrokChatCompletion } from "../utils/grokClient";
+import { getGrokChatCompletion, getCharacterMoods } from "../utils/grokClient";
 import { Message } from "../models/ChatPage";
+import { MoodResponse } from "../models/CharacterMood";
 
 interface PostChatRequest {
   messages: Message[];
@@ -44,7 +45,23 @@ class PostChatFunction extends BaseHttpFunction {
 
       if (replyContent) {
         context.log("Successfully received reply from Grok API.");
-        return ResponseBuilder.success({ reply: replyContent });
+
+        // Query for character moods after getting the reply
+        context.log("Querying for character moods...");
+        const moodResponse: MoodResponse | null = await getCharacterMoods(
+          grokKey,
+          [
+            ...requestBody.messages,
+            { id: "assistant-reply", role: "system", content: replyContent },
+          ],
+          requestBody.model
+        );
+
+        // Return both reply and mood information
+        return ResponseBuilder.success({
+          reply: replyContent,
+          mood: moodResponse,
+        });
       } else {
         context.log(replyContent);
         context.log("Grok API response did not contain expected content.");
