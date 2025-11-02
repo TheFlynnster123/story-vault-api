@@ -10,11 +10,15 @@ import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
 import OpenAI from "openai";
 import { getGrokChatCompletion } from "../utils/grokClient";
 import { Message } from "../models/ChatPage";
+import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
+import type { Character } from "../models/Character";
 
 interface PostChatRequest {
   messages: Message[];
   reasoningEffort?: "high" | "low";
   model?: string;
+  chatId?: string;
+  activeCharacterId?: string;
 }
 
 class PostChatFunction extends BaseHttpFunction {
@@ -35,10 +39,52 @@ class PostChatFunction extends BaseHttpFunction {
         return ResponseBuilder.unauthorized("No valid Grok API key found.");
       }
 
+      let messages = requestBody.messages;
+
+      // If activeCharacterId is provided, load the character and prepend system prompt
+      if (requestBody.chatId && requestBody.activeCharacterId) {
+        const userStorageClient = UserStorageClientSingleton.getInstance();
+        const blobName = `${requestBody.chatId}/characters/${requestBody.activeCharacterId}.character`;
+
+        try {
+          const characterContent = await userStorageClient.getBlob(
+            userId,
+            blobName
+          );
+
+          if (characterContent) {
+            const character = JSON.parse(characterContent) as Character;
+
+            if (character.systemPrompt) {
+              // Prepend character system prompt to messages
+              messages = [
+                {
+                  id: "character-system-prompt",
+                  role: "system",
+                  content: character.systemPrompt,
+                  characterId: character.id,
+                },
+                ...messages,
+              ];
+
+              context.log(
+                `Added system prompt for character: ${character.name}`
+              );
+            }
+          }
+        } catch (charError) {
+          context.warn(
+            `Failed to load character ${requestBody.activeCharacterId}:`,
+            charError
+          );
+          // Continue without character context
+        }
+      }
+
       context.log("Sending request to Grok API via grokClient...");
       const replyContent = await getGrokChatCompletion(
         grokKey,
-        requestBody.messages,
+        messages,
         requestBody.model
       );
 
