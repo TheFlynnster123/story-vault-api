@@ -5,7 +5,7 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
+import { d } from "../utils/Dependencies";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
 interface DeleteBlobRequestBody {
@@ -29,7 +29,7 @@ class DeleteBlobFunction extends BaseHttpFunction {
   ): Promise<HttpResponseInit> {
     const { chatId, blobName } = body as DeleteBlobRequestBody;
 
-    const userStorageClient = UserStorageClientSingleton.getInstance();
+    const userStorageClient = d.UserStorageClient();
     const fullName = `${chatId}/${blobName}`;
 
     await userStorageClient.deleteBlob(userId, fullName);

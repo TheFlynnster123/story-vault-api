@@ -11,7 +11,7 @@
     "prestart": "npm run clean && npm run build",
     "start": "func start",
     "start:debug": "npm run prestart && func start --language-worker -- \"--inspect=9229\"",
-    "test": "",
+    "test": "jest",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
     "lint:fix": "eslint src/**/*.ts tests/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",

@@ -5,7 +5,7 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
+import { d } from "../utils/Dependencies";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
 interface SavePhotoRequestBody {
@@ -30,7 +30,7 @@ class SavePhotoFunction extends BaseHttpFunction {
   ): Promise<HttpResponseInit> {
     const { chatId, photoName, photoData } = body as SavePhotoRequestBody;
 
-    const userStorageClient = UserStorageClientSingleton.getInstance();
+    const userStorageClient = d.UserStorageClient();
     const blobName = `${chatId}/${photoName}.photo`;
 
     // Convert the photo data object to JSON string for storage

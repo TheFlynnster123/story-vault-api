@@ -31,13 +31,12 @@ export class UserStorageClient {
   }
 
   async getBlob(userId: string, blobName: string): Promise<string | undefined> {
-    const blockBlobClient = this.containerClient.getBlockBlobClient(
+    const blobClient = this.containerClient.getBlobClient(
       `${userId}/${blobName}`
     );
     try {
-      const downloadBlockBlobResponse =
-        await blockBlobClient.downloadToBuffer();
-      return downloadBlockBlobResponse.toString();
+      const downloadResponse = await blobClient.downloadToBuffer();
+      return downloadResponse.toString();
     } catch (error: any) {
       if (
         error.name === "RestError" &&
@@ -98,6 +97,63 @@ export class UserStorageClient {
     const prefix = `${userId}/${folderName}/`;
     for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
       await this.containerClient.deleteBlob(blob.name);
+    }
+  }
+
+  async appendToBlob(
+    userId: string,
+    blobName: string,
+    content: string
+  ): Promise<void> {
+    const appendBlobClient = this.containerClient.getAppendBlobClient(
+      `${userId}/${blobName}`
+    );
+
+    try {
+      // Try to append to existing blob
+      await appendBlobClient.appendBlock(content, content.length);
+    } catch (error: any) {
+      if (
+        error.name === "RestError" &&
+        error.details?.errorCode === "BlobNotFound"
+      ) {
+        // Blob doesn't exist, create it first then append
+        await appendBlobClient.create();
+        await appendBlobClient.appendBlock(content, content.length);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async replaceAppendBlob(
+    userId: string,
+    blobName: string,
+    content: string
+  ): Promise<void> {
+    const appendBlobClient = this.containerClient.getAppendBlobClient(
+      `${userId}/${blobName}`
+    );
+
+    try {
+      // Delete existing append blob if it exists
+      await appendBlobClient.delete();
+    } catch (error: any) {
+      // Ignore if blob doesn't exist
+      if (
+        !(
+          error.name === "RestError" &&
+          error.details?.errorCode === "BlobNotFound"
+        )
+      ) {
+        throw error;
+      }
+    }
+
+    // Create new append blob with content
+    await appendBlobClient.create();
+    if (content) {
+      await appendBlobClient.appendBlock(content, content.length);
     }
   }
 }
