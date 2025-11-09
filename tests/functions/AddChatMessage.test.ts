@@ -59,7 +59,7 @@ describe("AddChatMessage Function", () => {
 
       expectBadRequestResponse(
         response,
-        "Invalid request body. Missing message or required message fields (id, role, content)."
+        "Invalid request body. Missing message or required message fields (id, content)."
       );
     });
 
@@ -73,21 +73,7 @@ describe("AddChatMessage Function", () => {
 
       expectBadRequestResponse(
         response,
-        "Invalid request body. Missing message or required message fields (id, role, content)."
-      );
-    });
-
-    it("should return 400 when message role is invalid", async () => {
-      const request = createMockRequest({
-        chatId: "test-chat",
-        message: { id: "msg1", role: "admin", content: "test" },
-      });
-
-      const response = await AddChatMessage(request, mockContext);
-
-      expectBadRequestResponse(
-        response,
-        "Invalid message role. Must be 'user' or 'system'."
+        "Invalid request body. Missing message or required message fields (id, content)."
       );
     });
   });

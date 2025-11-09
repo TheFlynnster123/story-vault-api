@@ -46,11 +46,8 @@ class AddChatMessageFunction extends BaseHttpFunction {
 }
 
 const validateMessage = (message: Message): string | null => {
-  if (!message || !message.id || !message.role || !message.content)
-    return "Invalid request body. Missing message or required message fields (id, role, content).";
-
-  if (!["user", "system"].includes(message.role))
-    return "Invalid message role. Must be 'user' or 'system'.";
+  if (!message || !message.id || !message.content)
+    return "Invalid request body. Missing message or required message fields (id, content).";
 
   return null;
 };
