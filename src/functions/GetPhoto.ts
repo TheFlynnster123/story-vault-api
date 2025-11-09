@@ -5,8 +5,8 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
 import { ResponseBuilder } from "../utils/responseBuilder";
+import { d } from "../utils/Dependencies";
 
 interface GetPhotoRequestBody {
   chatId: string;
@@ -33,10 +33,9 @@ class GetPhotoFunction extends BaseHttpFunction {
   ): Promise<HttpResponseInit> {
     const { chatId, photoName } = body as GetPhotoRequestBody;
 
-    const userStorageClient = UserStorageClientSingleton.getInstance();
     const blobName = `${chatId}/${photoName}.photo`;
 
-    const photoContent = await userStorageClient.getBlob(userId, blobName);
+    const photoContent = await d.UserStorageClient().getBlob(userId, blobName);
 
     if (photoContent === undefined) {
       return ResponseBuilder.notFound("Photo not found.");

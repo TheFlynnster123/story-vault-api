@@ -4,87 +4,115 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { UserStorageClient } from "../utils/UserStorageClient";
-import type { ChatPage } from "../models/ChatPage";
-import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
+import { BaseHttpFunction } from "../utils/baseHttpFunction";
+import { ResponseBuilder } from "../utils/responseBuilder";
+import type { Message, Chat } from "../models/ChatPage";
+import { d } from "../utils/Dependencies";
 
 interface GetChatHistoryRequestBody {
   chatId: string;
 }
 
+class GetChatHistoryFunction extends BaseHttpFunction {
+  protected validateRequestBody(
+    body: GetChatHistoryRequestBody
+  ): string | null {
+    if (!body.chatId) {
+      return "Invalid request body. Missing chatId.";
+    }
+    return null;
+  }
+
+  protected async execute(
+    request: HttpRequest,
+    context: InvocationContext,
+    userId: string,
+    body?: any
+  ): Promise<HttpResponseInit> {
+    const { chatId } = body as GetChatHistoryRequestBody;
+    const blobName = `${chatId}/chat-messages`;
+
+    const content = await d.UserStorageClient().getBlob(userId, blobName);
+
+    if (content === undefined) {
+      return ResponseBuilder.success(createEmptyChat(chatId));
+    }
+
+    try {
+      const messages = parseMessagesFromContent(content, context);
+      const chat = createChat(chatId, messages);
+
+      return successResponse(context, userId, blobName, chat);
+    } catch (parseError) {
+      return errorResponse(context, userId, blobName, parseError);
+    }
+  }
+}
+
+const createEmptyChat = (chatId: string): Chat => ({
+  chatId,
+  messages: [],
+});
+
+const parseMessagesFromContent = (
+  content: string,
+  context: InvocationContext
+): Message[] => {
+  const lines = content
+    .trim()
+    .split("\n")
+    .filter(line => line.trim() !== "");
+
+  const messages: Message[] = [];
+
+  for (const line of lines) {
+    try {
+      const message = JSON.parse(line) as Message;
+      messages.push(message);
+    } catch (parseError) {
+      context.warn(`Failed to parse message line: ${line}`, parseError);
+      // Skip invalid lines but continue processing
+    }
+  }
+
+  return messages;
+};
+
+const createChat = (chatId: string, messages: Message[]): Chat => ({
+  chatId,
+  messages,
+});
+
+const successResponse = (
+  context: InvocationContext,
+  userId: string,
+  blobName: string,
+  chat: Chat
+) => {
+  context.log(`Successfully retrieved chat history: ${userId}/${blobName}`);
+  return ResponseBuilder.success(chat);
+};
+
+const errorResponse = (
+  context: InvocationContext,
+  userId: string,
+  blobName: string,
+  error: any
+) => {
+  context.error(
+    `Failed to parse chat history for blob: ${userId}/${blobName}`,
+    error
+  );
+  return ResponseBuilder.error("Failed to parse chat history.");
+};
+
+const getChatHistoryFunction = new GetChatHistoryFunction();
+
 export async function GetChatHistory(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  context.log(`Http function processed request for url "${request.url}"`);
-
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return {
-      status: 401,
-      body: "Unauthorized. No user ID found.",
-    };
-  }
-
-  try {
-    const body = (await request.json()) as GetChatHistoryRequestBody;
-    const { chatId } = body;
-
-    if (!chatId) {
-      return {
-        status: 400,
-        body: "Invalid request. Missing chatId in the request body.",
-      };
-    }
-
-    const userStorageClient = new UserStorageClient();
-    // Ensure the prefix ends with a slash to list files within the "directory"
-    const chatPrefix = chatId.endsWith("/") ? chatId : `${chatId}/`;
-
-    const blobNames = await userStorageClient.listBlobsByPrefix(
-      userId,
-      chatPrefix
-    );
-
-    const chatPages: ChatPage[] = [];
-
-    for (const blobName of blobNames) {
-      // blobName from listBlobsByPrefix is already relative to userId folder (e.g., "chatId/pageId.txt")
-      // and ends with .txt. We only want to process .txt files.
-      if (blobName.startsWith(chatPrefix) && blobName.endsWith(".txt")) {
-        const content = await userStorageClient.getBlob(userId, blobName);
-        if (content) {
-          try {
-            const chatPage = JSON.parse(content) as ChatPage;
-            chatPages.push(chatPage);
-          } catch (parseError) {
-            context.warn(
-              `Failed to parse content for blob: ${userId}/${blobName}`,
-              parseError
-            );
-            // Optionally skip this page or handle error
-          }
-        }
-      }
-    }
-
-    return {
-      status: 200,
-      jsonBody: chatPages,
-    };
-  } catch (error) {
-    context.error("Error getting chat history:", error);
-    if (error instanceof SyntaxError && error.message.includes("JSON")) {
-      return {
-        status: 400,
-        body: "Invalid JSON format in request body.",
-      };
-    }
-    return {
-      status: 500,
-      body: "Failed to get chat history.",
-    };
-  }
+  return getChatHistoryFunction.handler(request, context);
 }
 
 app.http("GetChatHistory", {

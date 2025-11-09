@@ -5,8 +5,8 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { UserStorageClientSingleton } from "../utils/userStorageClientSingleton";
 import { ResponseBuilder } from "../utils/responseBuilder";
+import { d } from "../utils/Dependencies";
 
 interface DeleteChatRequestBody {
   chatId: string;
@@ -28,9 +28,7 @@ class DeleteChatFunction extends BaseHttpFunction {
   ): Promise<HttpResponseInit> {
     const { chatId } = body as DeleteChatRequestBody;
 
-    const userStorageClient = UserStorageClientSingleton.getInstance();
-
-    await userStorageClient.deleteFolder(userId, chatId);
+    await d.UserStorageClient().deleteFolder(userId, chatId);
 
     context.log(`Successfully deleted chat from blob: ${userId}/${chatId}`);
     return ResponseBuilder.successMessage("Chat deleted successfully.");

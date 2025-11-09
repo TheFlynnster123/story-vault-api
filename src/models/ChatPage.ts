@@ -4,8 +4,7 @@ export interface Message {
   content: string;
 }
 
-export interface ChatPage {
+export interface Chat {
   chatId: string;
-  pageId: string;
   messages: Message[];
 }

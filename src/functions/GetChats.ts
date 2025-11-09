@@ -4,41 +4,42 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { UserStorageClient } from "../utils/UserStorageClient";
-import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
+import { BaseHttpFunction } from "../utils/baseHttpFunction";
+import { ResponseBuilder } from "../utils/responseBuilder";
+import { d } from "../utils/Dependencies";
+
+class GetChatsFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: any): string | null {
+    // No request body validation needed for this endpoint
+    return null;
+  }
+
+  protected async execute(
+    request: HttpRequest,
+    context: InvocationContext,
+    userId: string,
+    body?: any
+  ): Promise<HttpResponseInit> {
+    const chatIds = await d.UserStorageClient().listChatIds(userId);
+    const filteredChatIds = filterSystemChats(chatIds);
+
+    context.log(
+      `Successfully retrieved ${filteredChatIds.length} chats for user: ${userId}`
+    );
+    return ResponseBuilder.success(filteredChatIds);
+  }
+}
+
+const filterSystemChats = (chatIds: string[]): string[] =>
+  chatIds.filter(id => id !== "global");
+
+const getChatsFunction = new GetChatsFunction();
 
 export async function GetChats(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  context.log(
-    `Http function processed request for url "${request.url}" (GetChats)`
-  );
-
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return {
-      status: 401,
-      body: "Unauthorized. No user ID found.",
-    };
-  }
-
-  try {
-    const userStorageClient = new UserStorageClient();
-    const chatIds = await userStorageClient.listChatIds(userId);
-    const filteredChatIds = chatIds.filter(id => id !== "global"); // Global Folder
-
-    return {
-      status: 200,
-      jsonBody: filteredChatIds,
-    };
-  } catch (error) {
-    context.error("Error getting chats:", error);
-    return {
-      status: 500,
-      body: "Failed to get chats.",
-    };
-  }
+  return getChatsFunction.handler(request, context);
 }
 
 app.http("GetChats", {
