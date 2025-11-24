@@ -9,7 +9,7 @@ import { ResponseBuilder } from "../utils/responseBuilder";
 import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
 import OpenAI from "openai";
 import { getGrokChatCompletion } from "../utils/grokClient";
-import { Message } from "../models/ChatPage";
+import { Message } from "../models/Chat";
 
 interface PostChatRequest {
   messages: Message[];

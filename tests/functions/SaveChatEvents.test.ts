@@ -1,4 +1,4 @@
-import { SaveChatHistory } from "../../src/functions/SaveChatHistory";
+import { SaveChatEvents } from "../../src/functions/SaveChatEvents";
 import { d } from "../../src/utils/Dependencies";
 import { HttpRequest, InvocationContext } from "@azure/functions";
 import { getAuthenticatedUserId } from "../../src/utils/getAuthenticatedUserId";
@@ -19,7 +19,7 @@ jest.mock("@azure/functions", () => ({
 const mockGetAuthenticatedUserId =
   getAuthenticatedUserId as jest.MockedFunction<typeof getAuthenticatedUserId>;
 
-describe("SaveChatHistory Function", () => {
+describe("SaveChatEvents Function", () => {
   let mockUserStorageClient: any;
   let mockContext: InvocationContext;
 
@@ -44,7 +44,7 @@ describe("SaveChatHistory Function", () => {
     it("should return 400 when chatId is missing", async () => {
       const request = createMockRequest({ events: [] });
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
@@ -55,7 +55,7 @@ describe("SaveChatHistory Function", () => {
     it("should return 400 when events is missing", async () => {
       const request = createMockRequest({ chatId: "test-chat" });
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
@@ -69,7 +69,7 @@ describe("SaveChatHistory Function", () => {
         events: "not-an-array",
       });
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
@@ -83,20 +83,20 @@ describe("SaveChatHistory Function", () => {
       mockGetAuthenticatedUserId.mockResolvedValue("");
       const request = createMockRequest(createValidRequestBody());
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
       expectUnauthorizedResponse(response);
     });
   });
 
   describe("Success Cases", () => {
-    it("should save empty chat history", async () => {
+    it("should save empty chat events", async () => {
       const chat: Chat = { chatId: "empty-chat", events: [] };
       const request = createMockRequest(chat);
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "Chat history saved successfully.");
+      expectSuccessResponse(response, "Chat events saved successfully.");
       expectReplaceAppendBlobCalledWith(
         "test-user-id",
         "empty-chat/chat-events",
@@ -109,9 +109,9 @@ describe("SaveChatHistory Function", () => {
       const chat: Chat = { chatId: "single-chat", events: [event] };
       const request = createMockRequest(chat);
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "Chat history saved successfully.");
+      expectSuccessResponse(response, "Chat events saved successfully.");
       expectReplaceAppendBlobCalledWith(
         "test-user-id",
         "single-chat/chat-events",
@@ -128,9 +128,9 @@ describe("SaveChatHistory Function", () => {
       const chat: Chat = { chatId: "multi-chat", events };
       const request = createMockRequest(chat);
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "Chat history saved successfully.");
+      expectSuccessResponse(response, "Chat events saved successfully.");
       expectReplaceAppendBlobCalledWith(
         "test-user-id",
         "multi-chat/chat-events",
@@ -143,7 +143,7 @@ describe("SaveChatHistory Function", () => {
       const chat: Chat = { chatId: "format-test", events };
       const request = createMockRequest(chat);
 
-      await SaveChatHistory(request, mockContext);
+      await SaveChatEvents(request, mockContext);
 
       const expectedContent =
         events.map(e => JSON.stringify(e)).join("\n") + "\n";
@@ -162,7 +162,7 @@ describe("SaveChatHistory Function", () => {
       );
       const request = createMockRequest(createValidRequestBody());
 
-      const response = await SaveChatHistory(request, mockContext);
+      const response = await SaveChatEvents(request, mockContext);
 
       expectServerErrorResponse(response);
     });
@@ -234,7 +234,7 @@ describe("SaveChatHistory Function", () => {
   }
 });
 
-// Test Cases Summary for SaveChatHistory:
+// Test Cases Summary for SaveChatEvents:
 // ✅ Validation Tests (3 cases)
 //   - Missing chatId
 //   - Missing events array
@@ -242,7 +242,7 @@ describe("SaveChatHistory Function", () => {
 // ✅ Authentication Tests (1 case)
 //   - Unauthenticated user
 // ✅ Success Cases (4 cases)
-//   - Save empty chat history
+//   - Save empty chat events
 //   - Save single event chat
 //   - Save multiple event chat
 //   - Correct JSONL formatting

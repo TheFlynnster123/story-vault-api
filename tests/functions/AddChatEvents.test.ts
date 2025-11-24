@@ -1,8 +1,8 @@
-import { AddChatMessages } from "../../src/functions/AddChatMessages";
+import { AddChatEvents } from "../../src/functions/AddChatEvents";
 import { d } from "../../src/utils/Dependencies";
 import { HttpRequest, InvocationContext } from "@azure/functions";
 import { getAuthenticatedUserId } from "../../src/utils/getAuthenticatedUserId";
-import { Message } from "../../src/models/ChatPage";
+import { ChatEventDTO } from "../../src/models/Chat";
 
 // Mock external dependencies
 jest.mock("../../src/utils/getAuthenticatedUserId");
@@ -19,7 +19,7 @@ jest.mock("@azure/functions", () => ({
 const mockGetAuthenticatedUserId =
   getAuthenticatedUserId as jest.MockedFunction<typeof getAuthenticatedUserId>;
 
-describe("AddChatMessages Function", () => {
+describe("AddChatEvents Function", () => {
   let mockUserStorageClient: any;
   let mockContext: InvocationContext;
 
@@ -42,9 +42,9 @@ describe("AddChatMessages Function", () => {
 
   describe("Validation", () => {
     it("should return 400 when chatId is missing", async () => {
-      const request = createMockRequest({ messages: [createValidMessage()] });
+      const request = createMockRequest({ events: [createValidEvent()] });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
@@ -52,101 +52,101 @@ describe("AddChatMessages Function", () => {
       );
     });
 
-    it("should return 400 when messages is missing", async () => {
+    it("should return 400 when events is missing", async () => {
       const request = createMockRequest({ chatId: "test-chat" });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
-        "Invalid request body. Missing messages array."
+        "Invalid request body. Missing events array."
       );
     });
 
-    it("should return 400 when messages is not an array", async () => {
+    it("should return 400 when events is not an array", async () => {
       const request = createMockRequest({
         chatId: "test-chat",
-        messages: "not-array",
+        events: "not-array",
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
-        "Invalid request body. Missing messages array."
+        "Invalid request body. Missing events array."
       );
     });
 
-    it("should return 400 when messages array is empty", async () => {
-      const request = createMockRequest({ chatId: "test-chat", messages: [] });
+    it("should return 400 when events array is empty", async () => {
+      const request = createMockRequest({ chatId: "test-chat", events: [] });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
-        "Invalid request body. Messages array cannot be empty."
+        "Invalid request body. Events array cannot be empty."
       );
     });
 
-    it("should return 400 when message id is missing", async () => {
-      const invalidMessage = { role: "user", content: "Hello" }; // Missing id
+    it("should return 400 when event id is missing", async () => {
+      const invalidEvent = { content: "Hello" }; // Missing id
       const request = createMockRequest({
         chatId: "test-chat",
-        messages: [invalidMessage],
+        events: [invalidEvent],
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
-        "Invalid message at index 0. Missing required fields (id, content)."
+        "Invalid event at index 0. Missing required fields (id, content)."
       );
     });
 
-    it("should return 400 when message content is missing", async () => {
-      const invalidMessage = { id: "msg-1", role: "user" }; // Missing content
+    it("should return 400 when event content is missing", async () => {
+      const invalidEvent = { id: "evt-1" }; // Missing content
       const request = createMockRequest({
         chatId: "test-chat",
-        messages: [invalidMessage],
+        events: [invalidEvent],
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
-        "Invalid message at index 0. Missing required fields (id, content)."
+        "Invalid event at index 0. Missing required fields (id, content)."
       );
     });
 
-    it("should return 400 when one message in array is invalid", async () => {
-      const validMessage = createValidMessage();
-      const invalidMessage = { id: "msg-2", role: "user" }; // Missing content
+    it("should return 400 when one event in array is invalid", async () => {
+      const validEvent = createValidEvent();
+      const invalidEvent = { id: "evt-2" }; // Missing content
       const request = createMockRequest({
         chatId: "test-chat",
-        messages: [validMessage, invalidMessage],
+        events: [validEvent, invalidEvent],
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
-        "Invalid message at index 1. Missing required fields (id, content)."
+        "Invalid event at index 1. Missing required fields (id, content)."
       );
     });
 
-    it("should accept messages without role field", async () => {
-      const messageWithoutRole = {
-        id: "msg-1",
-        content: "Hello without role",
+    it("should accept events with only id and content", async () => {
+      const minimalEvent = {
+        id: "evt-1",
+        content: "Hello",
       };
       const request = createMockRequest({
         chatId: "test-chat",
-        messages: [messageWithoutRole],
+        events: [minimalEvent],
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "1 messages added successfully.");
+      expectSuccessResponse(response, "1 events added successfully.");
     });
   });
 
@@ -155,103 +155,93 @@ describe("AddChatMessages Function", () => {
       mockGetAuthenticatedUserId.mockResolvedValue("");
       const request = createMockRequest(createValidRequestBody());
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectUnauthorizedResponse(response);
     });
   });
 
   describe("Success Cases", () => {
-    it("should append single message successfully", async () => {
-      const message = createValidMessage("user", "Hello");
+    it("should append single event successfully", async () => {
+      const event = createValidEvent("Hello");
       const request = createMockRequest({
         chatId: "single-chat",
-        messages: [message],
+        events: [event],
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "1 messages added successfully.");
-      expectAppendToBlobCalledWith(
-        "test-user-id",
-        "single-chat/chat-messages",
-        [message]
-      );
+      expectSuccessResponse(response, "1 events added successfully.");
+      expectAppendToBlobCalledWith("test-user-id", "single-chat/chat-events", [
+        event,
+      ]);
     });
 
-    it("should append multiple messages successfully", async () => {
-      const messages = [
-        createValidMessage("user", "Hello"),
-        createValidMessage("system", "Hi there!"),
-        createValidMessage("user", "How are you?"),
+    it("should append multiple events successfully", async () => {
+      const events = [
+        createValidEvent("Hello"),
+        createValidEvent("Hi there!"),
+        createValidEvent("How are you?"),
       ];
       const request = createMockRequest({
         chatId: "multi-chat",
-        messages,
+        events,
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "3 messages added successfully.");
+      expectSuccessResponse(response, "3 events added successfully.");
       expectAppendToBlobCalledWith(
         "test-user-id",
-        "multi-chat/chat-messages",
-        messages
+        "multi-chat/chat-events",
+        events
       );
     });
 
-    it("should handle messages with newlines in content", async () => {
-      const messageWithNewlines = createValidMessage(
-        "user",
-        "Line 1\nLine 2\nLine 3"
-      );
+    it("should handle events with newlines in content", async () => {
+      const eventWithNewlines = createValidEvent("Line 1\nLine 2\nLine 3");
       const request = createMockRequest({
         chatId: "newline-test",
-        messages: [messageWithNewlines],
+        events: [eventWithNewlines],
       });
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
-      expectSuccessResponse(response, "1 messages added successfully.");
-      expectAppendToBlobCalledWith(
-        "test-user-id",
-        "newline-test/chat-messages",
-        [messageWithNewlines]
-      );
+      expectSuccessResponse(response, "1 events added successfully.");
+      expectAppendToBlobCalledWith("test-user-id", "newline-test/chat-events", [
+        eventWithNewlines,
+      ]);
     });
 
-    it("should format messages as JSONL correctly", async () => {
-      const messages = [
-        createValidMessage("user", "First"),
-        createValidMessage("system", "Second"),
-      ];
+    it("should format events as JSONL correctly", async () => {
+      const events = [createValidEvent("First"), createValidEvent("Second")];
       const request = createMockRequest({
         chatId: "format-test",
-        messages,
+        events,
       });
 
-      await AddChatMessages(request, mockContext);
+      await AddChatEvents(request, mockContext);
 
       const expectedContent =
-        messages.map(m => JSON.stringify(m)).join("\n") + "\n";
+        events.map(e => JSON.stringify(e)).join("\n") + "\n";
       expect(mockUserStorageClient.appendToBlob).toHaveBeenCalledWith(
         "test-user-id",
-        "format-test/chat-messages",
+        "format-test/chat-events",
         expectedContent
       );
     });
 
-    it("should log successful message count", async () => {
-      const messages = [createValidMessage(), createValidMessage()];
+    it("should log successful event count", async () => {
+      const events = [createValidEvent(), createValidEvent()];
       const request = createMockRequest({
         chatId: "log-test",
-        messages,
+        events,
       });
 
-      await AddChatMessages(request, mockContext);
+      await AddChatEvents(request, mockContext);
 
       expect(mockContext.log).toHaveBeenCalledWith(
-        "Successfully appended 2 messages to chat: test-user-id/log-test/chat-messages"
+        "Successfully appended 2 events to chat: test-user-id/log-test/chat-events"
       );
     });
   });
@@ -263,7 +253,7 @@ describe("AddChatMessages Function", () => {
       );
       const request = createMockRequest(createValidRequestBody());
 
-      const response = await AddChatMessages(request, mockContext);
+      const response = await AddChatEvents(request, mockContext);
 
       expectServerErrorResponse(response);
     });
@@ -285,13 +275,11 @@ describe("AddChatMessages Function", () => {
     } as any;
   }
 
-  function createValidMessage(
-    role: "user" | "system" = "user",
-    content: string = "Test message content"
-  ): Message {
+  function createValidEvent(
+    content: string = "Test event content"
+  ): ChatEventDTO {
     return {
-      id: `msg-${Date.now()}-${Math.random()}`,
-      role,
+      id: `evt-${Date.now()}-${Math.random()}`,
       content,
     };
   }
@@ -299,7 +287,7 @@ describe("AddChatMessages Function", () => {
   function createValidRequestBody() {
     return {
       chatId: "test-chat",
-      messages: [createValidMessage()],
+      events: [createValidEvent()],
     };
   }
 
@@ -327,10 +315,10 @@ describe("AddChatMessages Function", () => {
   function expectAppendToBlobCalledWith(
     userId: string,
     blobName: string,
-    messages: Message[]
+    events: ChatEventDTO[]
   ): void {
     const expectedContent =
-      messages.map(m => JSON.stringify(m)).join("\n") + "\n";
+      events.map(e => JSON.stringify(e)).join("\n") + "\n";
     expect(mockUserStorageClient.appendToBlob).toHaveBeenCalledWith(
       userId,
       blobName,
@@ -339,13 +327,13 @@ describe("AddChatMessages Function", () => {
   }
 });
 
-// Test Cases Summary for AddChatMessages:
+// Test Cases Summary for AddChatEvents:
 // ✅ Validation Tests (8 cases)
-//   - Missing chatId, messages, empty array, invalid message fields
-//   - Validates each message in array, accepts messages without role
+//   - Missing chatId, events, empty array, invalid event fields
+//   - Validates each event in array, accepts events with only id and content
 // ✅ Authentication Tests (1 case)
 //   - Unauthenticated user returns 401
 // ✅ Success Cases (6 cases)
-//   - Single and multiple message append, newlines handling, JSONL formatting, logging
+//   - Single and multiple event append, newlines handling, JSONL formatting, logging
 // ✅ Error Handling (1 case)
 //   - Storage error handling

@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { Config } from "../config";
-import { Message } from "../models/ChatPage";
+import { Message } from "../models/Chat";
 import { EncryptionManager } from "./encryptionManager";
 
 export async function getGrokChatCompletion(

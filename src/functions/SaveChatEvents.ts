@@ -9,11 +9,11 @@ import { ResponseBuilder } from "../utils/responseBuilder";
 import type { Chat, ChatEventDTO } from "../models/Chat";
 import { d } from "../utils/Dependencies";
 
-interface SaveChatHistoryRequestBody extends Chat {}
+interface SaveChatEventsRequestBody extends Chat {}
 
-class SaveChatHistoryFunction extends BaseHttpFunction {
+class SaveChatEventsFunction extends BaseHttpFunction {
   protected validateRequestBody(
-    body: SaveChatHistoryRequestBody
+    body: SaveChatEventsRequestBody
   ): string | null {
     if (!body.chatId) {
       return "Invalid request body. Missing chatId.";
@@ -32,7 +32,7 @@ class SaveChatHistoryFunction extends BaseHttpFunction {
     userId: string,
     body?: any
   ): Promise<HttpResponseInit> {
-    const { chatId, events } = body as SaveChatHistoryRequestBody;
+    const { chatId, events } = body as SaveChatEventsRequestBody;
 
     const jsonEvents = toJson(events);
 
@@ -51,21 +51,21 @@ const SuccessResponse = (
   userId: string,
   blobName: string
 ) => {
-  context.log(`Successfully saved chat history: ${userId}/${blobName}`);
-  return ResponseBuilder.successMessage("Chat history saved successfully.");
+  context.log(`Successfully saved chat events: ${userId}/${blobName}`);
+  return ResponseBuilder.successMessage("Chat events saved successfully.");
 };
 
-const saveChatHistoryFunction = new SaveChatHistoryFunction();
+const saveChatEventsFunction = new SaveChatEventsFunction();
 
-export async function SaveChatHistory(
+export async function SaveChatEvents(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  return saveChatHistoryFunction.handler(request, context);
+  return saveChatEventsFunction.handler(request, context);
 }
 
-app.http("SaveChatHistory", {
+app.http("SaveChatEvents", {
   methods: ["POST"],
   authLevel: "anonymous",
-  handler: SaveChatHistory,
+  handler: SaveChatEvents,
 });

@@ -1,4 +1,4 @@
-import { GetChatHistory } from "../../src/functions/GetChatHistory";
+import { GetChatEvents } from "../../src/functions/GetChatEvents";
 import { d } from "../../src/utils/Dependencies";
 import { HttpRequest, InvocationContext } from "@azure/functions";
 import { getAuthenticatedUserId } from "../../src/utils/getAuthenticatedUserId";
@@ -19,7 +19,7 @@ jest.mock("@azure/functions", () => ({
 const mockGetAuthenticatedUserId =
   getAuthenticatedUserId as jest.MockedFunction<typeof getAuthenticatedUserId>;
 
-describe("GetChatHistory Function", () => {
+describe("GetChatEvents Function", () => {
   let mockUserStorageClient: any;
   let mockContext: InvocationContext;
 
@@ -44,7 +44,7 @@ describe("GetChatHistory Function", () => {
     it("should return 400 when chatId is missing", async () => {
       const request = createMockRequest({});
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectBadRequestResponse(
         response,
@@ -58,7 +58,7 @@ describe("GetChatHistory Function", () => {
       mockGetAuthenticatedUserId.mockResolvedValue("");
       const request = createMockRequest({ chatId: "test-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectUnauthorizedResponse(response);
     });
@@ -69,7 +69,7 @@ describe("GetChatHistory Function", () => {
       mockUserStorageClient.getBlob.mockResolvedValue(undefined);
       const request = createMockRequest({ chatId: "nonexistent-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectSuccessResponse(response);
       expectEmptyChatReturned(response, "nonexistent-chat");
@@ -79,7 +79,7 @@ describe("GetChatHistory Function", () => {
       mockUserStorageClient.getBlob.mockResolvedValue("");
       const request = createMockRequest({ chatId: "empty-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectSuccessResponse(response);
       expectEmptyChatReturned(response, "empty-chat");
@@ -91,7 +91,7 @@ describe("GetChatHistory Function", () => {
       mockUserStorageClient.getBlob.mockResolvedValue(blobContent);
       const request = createMockRequest({ chatId: "single-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectSuccessResponse(response);
       expectChatWithEvents(response, "single-chat", [event]);
@@ -107,7 +107,7 @@ describe("GetChatHistory Function", () => {
       mockUserStorageClient.getBlob.mockResolvedValue(blobContent);
       const request = createMockRequest({ chatId: "multi-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectSuccessResponse(response);
       expectChatWithEvents(response, "multi-chat", events);
@@ -128,7 +128,7 @@ describe("GetChatHistory Function", () => {
       mockUserStorageClient.getBlob.mockResolvedValue(blobContent);
       const request = createMockRequest({ chatId: "mixed-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectSuccessResponse(response);
       expectChatWithEvents(response, "mixed-chat", [validEvent1, validEvent2]);
@@ -139,7 +139,7 @@ describe("GetChatHistory Function", () => {
       mockUserStorageClient.getBlob.mockResolvedValue("");
       const request = createMockRequest({ chatId: "param-test" });
 
-      await GetChatHistory(request, mockContext);
+      await GetChatEvents(request, mockContext);
 
       expect(mockUserStorageClient.getBlob).toHaveBeenCalledWith(
         "test-user-id",
@@ -155,7 +155,7 @@ describe("GetChatHistory Function", () => {
       );
       const request = createMockRequest({ chatId: "error-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectServerErrorResponse(response, "An unexpected error occurred.");
     });
@@ -166,7 +166,7 @@ describe("GetChatHistory Function", () => {
       );
       const request = createMockRequest({ chatId: "parse-error-chat" });
 
-      const response = await GetChatHistory(request, mockContext);
+      const response = await GetChatEvents(request, mockContext);
 
       expectSuccessResponse(response);
       expectEmptyChatReturned(response, "parse-error-chat");
@@ -244,7 +244,7 @@ describe("GetChatHistory Function", () => {
   }
 });
 
-// Test Cases Summary for GetChatHistory:
+// Test Cases Summary for GetChatEvents:
 // ✅ Validation Tests (1 case)
 //   - Missing chatId
 // ✅ Authentication Tests (1 case)
