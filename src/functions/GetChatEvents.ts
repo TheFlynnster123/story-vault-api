@@ -9,14 +9,12 @@ import { ResponseBuilder } from "../utils/responseBuilder";
 import type { ChatEventDTO, Chat } from "../models/Chat";
 import { d } from "../utils/Dependencies";
 
-interface GetChatHistoryRequestBody {
+interface GetChatEventsRequestBody {
   chatId: string;
 }
 
-class GetChatHistoryFunction extends BaseHttpFunction {
-  protected validateRequestBody(
-    body: GetChatHistoryRequestBody
-  ): string | null {
+class GetChatEventsFunction extends BaseHttpFunction {
+  protected validateRequestBody(body: GetChatEventsRequestBody): string | null {
     if (!body.chatId) {
       return "Invalid request body. Missing chatId.";
     }
@@ -29,7 +27,7 @@ class GetChatHistoryFunction extends BaseHttpFunction {
     userId: string,
     body?: any
   ): Promise<HttpResponseInit> {
-    const { chatId } = body as GetChatHistoryRequestBody;
+    const { chatId } = body as GetChatEventsRequestBody;
     const blobName = `${chatId}/chat-events`;
 
     const content = await d.UserStorageClient().getBlob(userId, blobName);
@@ -89,7 +87,7 @@ const successResponse = (
   blobName: string,
   chat: Chat
 ) => {
-  context.log(`Successfully retrieved chat history: ${userId}/${blobName}`);
+  context.log(`Successfully retrieved chat events: ${userId}/${blobName}`);
   return ResponseBuilder.success(chat);
 };
 
@@ -100,23 +98,23 @@ const errorResponse = (
   error: any
 ) => {
   context.error(
-    `Failed to parse chat history for blob: ${userId}/${blobName}`,
+    `Failed to parse chat events for blob: ${userId}/${blobName}`,
     error
   );
-  return ResponseBuilder.error("Failed to parse chat history.");
+  return ResponseBuilder.error("Failed to parse chat events.");
 };
 
-const getChatHistoryFunction = new GetChatHistoryFunction();
+const getChatEventsFunction = new GetChatEventsFunction();
 
-export async function GetChatHistory(
+export async function GetChatEvents(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  return getChatHistoryFunction.handler(request, context);
+  return getChatEventsFunction.handler(request, context);
 }
 
-app.http("GetChatHistory", {
+app.http("GetChatEvents", {
   methods: ["POST"],
   authLevel: "anonymous",
-  handler: GetChatHistory,
+  handler: GetChatEvents,
 });

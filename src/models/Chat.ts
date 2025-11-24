@@ -1,10 +1,9 @@
-export interface Message {
+export interface ChatEventDTO {
   id: string;
-  role: "user" | "system";
   content: string;
 }
 
 export interface Chat {
   chatId: string;
-  messages: Message[];
+  events: ChatEventDTO[];
 }
