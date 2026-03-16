@@ -5,10 +5,10 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
-import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
+import { getOpenRouterKeyRequest } from "../databaseRequests/getOpenRouterKeyRequest";
 import { ResponseBuilder } from "../utils/responseBuilder";
 
-class HasValidGrokKeyFunction extends BaseHttpFunction {
+class HasValidOpenRouterKeyFunction extends BaseHttpFunction {
   protected validateRequestBody(body: any): string | null {
     // No request body validation needed for GET request
     return null;
@@ -19,27 +19,27 @@ class HasValidGrokKeyFunction extends BaseHttpFunction {
     context: InvocationContext,
     userId: string
   ): Promise<HttpResponseInit> {
-    const grokKey = await getGrokKeyRequest(userId);
+    const openRouterKey = await getOpenRouterKeyRequest(userId);
 
-    if (grokKey) {
+    if (openRouterKey) {
       return ResponseBuilder.success();
     } else {
-      return ResponseBuilder.notFound("Grok key not found");
+      return ResponseBuilder.notFound("OpenRouter key not found");
     }
   }
 }
 
-const hasValidGrokKeyFunction = new HasValidGrokKeyFunction();
+const hasValidOpenRouterKeyFunction = new HasValidOpenRouterKeyFunction();
 
-export async function HasValidGrokKey(
+export async function HasValidOpenRouterKey(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  return hasValidGrokKeyFunction.handler(request, context);
+  return hasValidOpenRouterKeyFunction.handler(request, context);
 }
 
-app.http("HasValidGrokKey", {
+app.http("HasValidOpenRouterKey", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: HasValidGrokKey,
+  handler: HasValidOpenRouterKey,
 });
