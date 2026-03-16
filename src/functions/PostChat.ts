@@ -6,9 +6,9 @@ import {
 } from "@azure/functions";
 import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { ResponseBuilder } from "../utils/responseBuilder";
-import { getGrokKeyRequest } from "../databaseRequests/getGrokKeyRequest";
+import { getOpenRouterKeyRequest } from "../databaseRequests/getOpenRouterKeyRequest";
 import OpenAI from "openai";
-import { getGrokChatCompletion } from "../utils/grokClient";
+import { getOpenRouterChatCompletion } from "../utils/openRouterClient";
 import { Message } from "../models/Chat";
 
 interface PostChatRequest {
@@ -29,27 +29,27 @@ class PostChatFunction extends BaseHttpFunction {
     try {
       const requestBody = body as PostChatRequest;
       const encryptionKey = request.headers.get("EncryptionKey");
-      const grokKey = await getGrokKeyRequest(userId, encryptionKey);
+      const openRouterKey = await getOpenRouterKeyRequest(userId, encryptionKey);
 
-      if (!grokKey) {
-        return ResponseBuilder.unauthorized("No valid Grok API key found.");
+      if (!openRouterKey) {
+        return ResponseBuilder.unauthorized("No valid OpenRouter API key found.");
       }
 
-      context.log("Sending request to Grok API via grokClient...");
-      const replyContent = await getGrokChatCompletion(
-        grokKey,
+      context.log("Sending request to OpenRouter API via openRouterClient...");
+      const replyContent = await getOpenRouterChatCompletion(
+        openRouterKey,
         requestBody.messages,
         requestBody.model
       );
 
       if (replyContent) {
-        context.log("Successfully received reply from Grok API.");
+        context.log("Successfully received reply from OpenRouter API.");
         return ResponseBuilder.success({ reply: replyContent });
       } else {
         context.log(replyContent);
-        context.log("Grok API response did not contain expected content.");
+        context.log("OpenRouter API response did not contain expected content.");
         return ResponseBuilder.error(
-          "Failed to get a valid response from Grok API.",
+          "Failed to get a valid response from OpenRouter API.",
           500
         );
       }
@@ -57,7 +57,7 @@ class PostChatFunction extends BaseHttpFunction {
       if (error instanceof OpenAI.APIError) {
         context.error("Error in PostChat function:", error);
         return ResponseBuilder.jsonError(
-          "Grok API error",
+          "OpenRouter API error",
           error.message,
           error.status || 500
         );
