@@ -36,17 +36,17 @@ class PostChatFunction extends BaseHttpFunction {
       }
 
       context.log("Sending request to OpenRouter API via openRouterClient...");
-      const replyContent = await getOpenRouterChatCompletion(
+      const result = await getOpenRouterChatCompletion(
         openRouterKey,
         requestBody.messages,
         requestBody.model
       );
 
-      if (replyContent) {
+      if (result.content) {
         context.log("Successfully received reply from OpenRouter API.");
-        return ResponseBuilder.success({ reply: replyContent });
+        return ResponseBuilder.success({ reply: result.content, usage: result.usage });
       } else {
-        context.log(replyContent);
+        context.log(result);
         context.log("OpenRouter API response did not contain expected content.");
         return ResponseBuilder.error(
           "Failed to get a valid response from OpenRouter API.",
