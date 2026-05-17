@@ -28,6 +28,21 @@ export class ResponseBuilder {
     };
   }
 
+  static openRouterProxyError(
+    code: number,
+    message: string
+  ): HttpResponseInit {
+    return {
+      status: code || 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        error: { code, message },
+      }),
+    };
+  }
+
   static jsonError(
     error: string,
     details?: string,

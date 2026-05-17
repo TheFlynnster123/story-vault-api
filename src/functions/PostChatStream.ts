@@ -75,13 +75,15 @@ export async function PostChatStream(
           context.error("Error during streaming:", error);
 
           let errorMessage = "Streaming error";
+          let errorCode = 500;
           if (error instanceof OpenAI.APIError) {
             errorMessage = error.message;
+            errorCode = error.status || 500;
           }
 
           controller.enqueue(
             encoder.encode(
-              `data: ${JSON.stringify({ error: errorMessage })}\n\n`
+              `data: ${JSON.stringify({ error: errorMessage, code: errorCode })}\n\n`
             )
           );
           controller.close();

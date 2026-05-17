@@ -56,10 +56,9 @@ class PostChatFunction extends BaseHttpFunction {
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         context.error("Error in PostChat function:", error);
-        return ResponseBuilder.jsonError(
-          "OpenRouter API error",
-          error.message,
-          error.status || 500
+        return ResponseBuilder.openRouterProxyError(
+          error.status || 500,
+          error.message
         );
       }
 
