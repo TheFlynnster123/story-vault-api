@@ -50,6 +50,10 @@ export interface ImageGenerationSettings {
   additionalNetworks: Record<string, AdditionalNetwork>;
 }
 
+/**
+ * Structured error payload returned when a Civitai API call fails.
+ * `error` contains sanitized upstream error details safe for clients.
+ */
 export interface CivitaiApiErrorResponse {
   error: Record<string, any>;
 }

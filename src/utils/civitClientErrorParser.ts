@@ -16,6 +16,9 @@ export class CivitClientErrorParser {
     "key",
   ]);
 
+  /**
+   * Determines whether a key name likely contains sensitive credential material.
+   */
   private static isSensitiveKey(key: string): boolean {
     const normalizedKey = key.toLowerCase().replace(/[_\s-]/g, "");
     return (
@@ -27,6 +30,10 @@ export class CivitClientErrorParser {
     );
   }
 
+  /**
+   * Recursively sanitizes a value for safe logging/response output.
+   * Redacts sensitive fields and avoids infinite recursion via `seen`.
+   */
   private static sanitize(value: any, seen = new WeakSet<object>()): any {
     if (
       value === null ||
