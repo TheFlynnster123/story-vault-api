@@ -79,8 +79,11 @@ export class CivitClientErrorParser {
   static parse(error: any): Record<string, any> {
     const serializedError = this.sanitize(error);
     const parsedPayload: Record<string, any> = {
-      civitApiError: serializedError,
+      civitaiApiError: serializedError,
     };
+    if (typeof error?.message === "string") {
+      parsedPayload.message = error.message;
+    }
 
     const errorMessage = error?.message;
     if (

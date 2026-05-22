@@ -46,9 +46,7 @@ class GenerateImageFunction extends BaseHttpFunction {
       );
     }
 
-    const errorPayload =
-      response.error ??
-      (response.errors ? { errors: response.errors } : undefined);
+    const errorPayload = response.error;
     if (errorPayload) {
       const serializedError = JSON.stringify(errorPayload);
       context.log(
