@@ -51,7 +51,13 @@ class GenerateImageFunction extends BaseHttpFunction {
       context.log(
         `Civitai API returned an error for user: ${userId}, error: ${JSON.stringify(errorPayload)}`
       );
-      return ResponseBuilder.success(errorPayload, 502);
+      return {
+        status: 502,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(errorPayload),
+      };
     }
 
     context.log(

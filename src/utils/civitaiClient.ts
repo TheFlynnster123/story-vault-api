@@ -50,6 +50,10 @@ export interface ImageGenerationSettings {
   additionalNetworks: Record<string, AdditionalNetwork>;
 }
 
+export interface CivitaiApiErrorResponse {
+  error: Record<string, any>;
+}
+
 export class CivitaiClient {
   /**
    * Example function showing how to retrieve and use the Civitai API key
@@ -108,7 +112,7 @@ export class CivitaiClient {
     userId: string,
     input: ImageGenerationSettings,
     encryptionKey?: string
-  ): Promise<any | null> {
+  ): Promise<any | CivitaiApiErrorResponse | null> {
     const civitaiKey = await getCivitaiKeyRequest(userId, encryptionKey);
 
     if (!civitaiKey) {
@@ -139,7 +143,7 @@ export class CivitaiClient {
     userId: string,
     jobId: string,
     encryptionKey?: string
-  ): Promise<any | null> {
+  ): Promise<any | CivitaiApiErrorResponse | null> {
     const civitaiKey = await getCivitaiKeyRequest(userId, encryptionKey);
 
     if (!civitaiKey) {

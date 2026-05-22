@@ -51,7 +51,13 @@ class GetJobStatusFunction extends BaseHttpFunction {
       context.log(
         `Civitai API returned a job status error for user: ${userId}, jobId: ${jobId}, error: ${JSON.stringify(jobStatus.error)}`
       );
-      return ResponseBuilder.success(jobStatus.error, 502);
+      return {
+        status: 502,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jobStatus.error),
+      };
     }
 
     context.log(
