@@ -2,29 +2,95 @@
  * Error parser for Civitai client validation errors
  */
 export class CivitClientErrorParser {
+  private static readonly REDACTED = "[REDACTED]";
+  private static readonly SENSITIVE_KEYS = new Set([
+    "authorization",
+    "proxy-authorization",
+    "x-api-key",
+    "api-key",
+    "apikey",
+    "auth",
+    "password",
+    "secret",
+    "token",
+    "key",
+  ]);
+
+  private static isSensitiveKey(key: string): boolean {
+    const normalizedKey = key.toLowerCase().replace(/[_\s-]/g, "");
+    return (
+      this.SENSITIVE_KEYS.has(key.toLowerCase()) ||
+      normalizedKey.includes("authorization") ||
+      normalizedKey.includes("apikey") ||
+      normalizedKey.endsWith("token") ||
+      normalizedKey.endsWith("secret")
+    );
+  }
+
+  private static sanitize(value: any, seen = new WeakSet<object>()): any {
+    if (
+      value === null ||
+      value === undefined ||
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
+      return value;
+    }
+
+    if (typeof value === "bigint") {
+      return value.toString();
+    }
+
+    if (typeof value !== "object") {
+      return String(value);
+    }
+
+    if (seen.has(value)) {
+      return "[Circular]";
+    }
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.sanitize(item, seen));
+    }
+
+    const result: Record<string, any> = {};
+    for (const key of Object.getOwnPropertyNames(value)) {
+      const item = value[key];
+      result[key] = this.isSensitiveKey(key)
+        ? this.REDACTED
+        : this.sanitize(item, seen);
+    }
+    return result;
+  }
+
   /**
    * Parses a Civitai validation error message and extracts the structured error data
-   * @param errorMessage - The error message from Civitai API
-   * @returns Object with parsed validation errors or null if not a validation error
+   * @param error - The error from Civitai API
+   * @returns Parsed and sanitized error payload
    */
-  static parse(error: Error): { errors: any[] } | null {
-    try {
-      if (!error?.message || !error.message.startsWith("Validation error:"))
-        return null;
+  static parse(error: any): Record<string, any> {
+    const serializedError = this.sanitize(error);
+    const parsedPayload: Record<string, any> = {
+      civitApiError: serializedError,
+    };
 
-      // Extract the JSON array part after "Validation Error: "
-      const jsonPart = error.message
-        .substring("Validation error: ".length)
-        .trim();
-
-      // Parse the JSON array
-      const parsedErrors = JSON.parse(jsonPart);
-
-      // Return in the expected format
-      return { errors: parsedErrors };
-    } catch (parseError) {
-      console.warn("Failed to parse validation error:", parseError);
-      return null;
+    const errorMessage = error?.message;
+    if (
+      typeof errorMessage === "string" &&
+      errorMessage.startsWith("Validation error:")
+    ) {
+      try {
+        const jsonPart = errorMessage
+          .substring("Validation error: ".length)
+          .trim();
+        parsedPayload.errors = JSON.parse(jsonPart);
+      } catch (parseError) {
+        parsedPayload.validationParseError = this.sanitize(parseError);
+      }
     }
+
+    return parsedPayload;
   }
 }

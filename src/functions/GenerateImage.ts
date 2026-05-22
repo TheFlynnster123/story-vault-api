@@ -46,11 +46,12 @@ class GenerateImageFunction extends BaseHttpFunction {
       );
     }
 
-    if (response.errors) {
+    if (response.error || response.errors) {
+      const errorPayload = response.error || response.errors;
       context.log(
-        `Civitai API returned an error for user: ${userId}, error: ${JSON.stringify(response.error)}`
+        `Civitai API returned an error for user: ${userId}, error: ${JSON.stringify(errorPayload)}`
       );
-      return ResponseBuilder.badRequest(JSON.stringify(response.errors));
+      return ResponseBuilder.badRequest(JSON.stringify(errorPayload));
     }
 
     context.log(

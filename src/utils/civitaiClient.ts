@@ -124,7 +124,7 @@ export class CivitaiClient {
       return response;
     } catch (error: any) {
       console.error("Error generating image:", error);
-      return CivitClientErrorParser.parse(error);
+      return { error: CivitClientErrorParser.parse(error) };
     }
   }
 
@@ -155,18 +155,7 @@ export class CivitaiClient {
       return job;
     } catch (error) {
       console.error("Error getting job status:", error);
-
-      // Check if this is a validation error that can be parsed
-      if (error instanceof Error && error.message) {
-        const parsedError = CivitClientErrorParser.parse(error);
-        if (parsedError) {
-          console.error("Parsed validation error:", parsedError);
-          // You can return the parsed error or handle it as needed
-          throw new Error(JSON.stringify(parsedError));
-        }
-      }
-
-      return null;
+      return { error: CivitClientErrorParser.parse(error) };
     }
   }
 }
