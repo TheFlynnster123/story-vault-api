@@ -13,7 +13,6 @@ export class CivitClientErrorParser {
     "password",
     "secret",
     "token",
-    "key",
   ]);
 
   /**
@@ -63,7 +62,7 @@ export class CivitClientErrorParser {
     }
 
     const result: Record<string, any> = {};
-    for (const key of Object.getOwnPropertyNames(value)) {
+    for (const key of Object.keys(value)) {
       const item = value[key];
       result[key] = this.isSensitiveKey(key)
         ? this.REDACTED

@@ -48,15 +48,16 @@ class GetJobStatusFunction extends BaseHttpFunction {
     }
 
     if (jobStatus.error) {
+      const serializedError = JSON.stringify(jobStatus.error);
       context.log(
-        `Civitai API returned a job status error for user: ${userId}, jobId: ${jobId}, error: ${JSON.stringify(jobStatus.error)}`
+        `Civitai API returned a job status error for user: ${userId}, jobId: ${jobId}, error: ${serializedError.slice(0, 1000)}`
       );
       return {
         status: 502,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(jobStatus.error),
+        body: serializedError,
       };
     }
 
