@@ -33,7 +33,7 @@ class SubmitWorkflowFunction extends BaseHttpFunction {
       );
     }
 
-    const waitParam = request.query.get("wait") ?? "0";
+    const waitParam = request.query.get("wait") ?? "60";
     const url = `${CIVITAI_ORCHESTRATION_BASE}/v2/consumer/workflows?wait=${waitParam}`;
 
     const response = await fetch(url, {
