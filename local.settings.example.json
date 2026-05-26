@@ -6,5 +6,8 @@
     "AUTH0_DOMAIN": "your-auth0-domain.auth0.com",
     "STORAGE_CONNECTION_STRING": "your-secret-key",
     "OPENROUTER_BASE_URL": "https://openrouter.ai/api/v1"
+  },
+  "Host": {
+    "CORS": "http://localhost:5173,https://localhost:5173"
   }
 }
