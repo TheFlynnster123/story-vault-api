@@ -8,13 +8,14 @@ import { BaseHttpFunction } from "../utils/baseHttpFunction";
 import { ResponseBuilder } from "../utils/responseBuilder";
 import { getOpenRouterKeyRequest } from "../databaseRequests/getOpenRouterKeyRequest";
 import OpenAI from "openai";
-import { getOpenRouterChatCompletion } from "../utils/openRouterClient";
+import {
+  getOpenRouterChatCompletion,
+  OpenRouterChatCompletionRequest,
+} from "../utils/openRouterClient";
 import { Message } from "../models/Chat";
 
-interface PostChatRequest {
+interface PostChatRequest extends OpenRouterChatCompletionRequest {
   messages: Message[];
-  reasoningEffort?: "high" | "low";
-  model?: string;
 }
 
 class PostChatFunction extends BaseHttpFunction {
@@ -38,13 +39,15 @@ class PostChatFunction extends BaseHttpFunction {
       context.log("Sending request to OpenRouter API via openRouterClient...");
       const result = await getOpenRouterChatCompletion(
         openRouterKey,
-        requestBody.messages,
-        requestBody.model
+        requestBody
       );
 
       if (result.content) {
         context.log("Successfully received reply from OpenRouter API.");
-        return ResponseBuilder.success({ reply: result.content, usage: result.usage });
+        return ResponseBuilder.success({
+          reply: result.content,
+          usage: result.usage,
+        });
       } else {
         context.log(result);
         context.log("OpenRouter API response did not contain expected content.");

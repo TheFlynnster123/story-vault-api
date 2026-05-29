@@ -114,7 +114,12 @@ describe("PostChat", () => {
     it("returns 200 with reply and usage on success", async () => {
       mockGetOpenRouterChatCompletion.mockResolvedValue({
         content: "Hello back!",
-        usage: { promptTokens: 5, completionTokens: 3, reasoningTokens: null, cost: 0.001 },
+        usage: {
+          promptTokens: 5,
+          completionTokens: 3,
+          reasoningTokens: null,
+          cost: 0.001,
+        },
       });
 
       const response = await PostChat(createMockRequest(VALID_BODY), context);
@@ -123,6 +128,28 @@ describe("PostChat", () => {
       const body = JSON.parse(response.body as string);
       expect(body.reply).toBe("Hello back!");
       expect(body.usage.promptTokens).toBe(5);
+    });
+
+    it("passes OpenRouter chat request fields through to the client", async () => {
+      const body = {
+        messages: [{ role: "user", content: "Hello" }],
+        model: "openai/o4-mini",
+        reasoning: { effort: "high" },
+        provider: { require_parameters: true },
+        future_openrouter_option: { enabled: true },
+      };
+      mockGetOpenRouterChatCompletion.mockResolvedValue({
+        content: "Hello back!",
+        usage: null,
+      });
+
+      const response = await PostChat(createMockRequest(body), context);
+
+      expect(response.status).toBe(200);
+      expect(mockGetOpenRouterChatCompletion).toHaveBeenCalledWith(
+        MOCK_OR_KEY,
+        body
+      );
     });
 
     it("returns 500 when API response contains no content", async () => {

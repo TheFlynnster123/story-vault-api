@@ -7,13 +7,15 @@ import {
 import { getAuthenticatedUserId } from "../utils/getAuthenticatedUserId";
 import { ResponseBuilder } from "../utils/responseBuilder";
 import { getOpenRouterKeyRequest } from "../databaseRequests/getOpenRouterKeyRequest";
-import { streamOpenRouterChatCompletion } from "../utils/openRouterClient";
+import {
+  OpenRouterChatCompletionRequest,
+  streamOpenRouterChatCompletion,
+} from "../utils/openRouterClient";
 import { Message } from "../models/Chat";
 import OpenAI from "openai";
 
-interface PostChatStreamRequest {
+interface PostChatStreamRequest extends OpenRouterChatCompletionRequest {
   messages: Message[];
-  model?: string;
 }
 
 export async function PostChatStream(
@@ -54,8 +56,7 @@ export async function PostChatStream(
 
     const tokenStream = streamOpenRouterChatCompletion(
       openRouterKey,
-      body.messages,
-      body.model
+      body
     );
 
     const readableStream = new ReadableStream({
