@@ -2,6 +2,8 @@ import OpenAI from "openai";
 import { Config } from "../config";
 import { Message } from "../models/Chat";
 
+const DEFAULT_CHAT_MODEL = "x-ai/grok-4.1-mini";
+
 export interface UsageInfo {
   promptTokens: number;
   completionTokens: number;
@@ -14,6 +16,12 @@ export interface UsageInfo {
 export interface ChatCompletionResult {
   content: string | null;
   usage: UsageInfo | null;
+}
+
+export interface OpenRouterChatCompletionRequest {
+  messages: Message[];
+  model?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -42,16 +50,15 @@ function extractUsage(rawUsage: any): UsageInfo | null {
 
 export async function getOpenRouterChatCompletion(
   openRouterKey: string,
-  messages: Message[],
-  model: string = "x-ai/grok-4.1-mini"
+  request: OpenRouterChatCompletionRequest
 ): Promise<ChatCompletionResult> {
   const client = createOpenRouterClient(openRouterKey);
 
   const completion = await client.chat.completions.create({
-    model: model,
-    messages: messages,
+    ...request,
+    model: request.model ?? DEFAULT_CHAT_MODEL,
     stream: false,
-  });
+  } as any);
 
   return {
     content: completion.choices[0]?.message?.content || null,
@@ -61,16 +68,21 @@ export async function getOpenRouterChatCompletion(
 
 export async function* streamOpenRouterChatCompletion(
   openRouterKey: string,
-  messages: Message[],
-  model: string = "x-ai/grok-4.1-mini"
+  request: OpenRouterChatCompletionRequest
 ): AsyncGenerator<StreamToken> {
   const client = createOpenRouterClient(openRouterKey);
+  const streamOptions =
+    typeof request.stream_options === "object" &&
+    request.stream_options !== null &&
+    !Array.isArray(request.stream_options)
+      ? request.stream_options
+      : {};
 
   const stream = (await client.chat.completions.create({
-    model: model,
-    messages: messages,
+    ...request,
+    model: request.model ?? DEFAULT_CHAT_MODEL,
     stream: true,
-    stream_options: { include_usage: true },
+    stream_options: { ...streamOptions, include_usage: true },
   } as any)) as unknown as AsyncIterable<any>;
 
   let usageInfo: UsageInfo | null = null;
@@ -90,4 +102,3 @@ export async function* streamOpenRouterChatCompletion(
     yield { type: "usage", data: usageInfo };
   }
 }
-
